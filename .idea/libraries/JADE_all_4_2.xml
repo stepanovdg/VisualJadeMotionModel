@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="JADE-all-4.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../Курсовая/JADE-bin-4.2.0/jade/lib/commons-codec/commons-codec-1.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../../Курсовая/JADE-bin-4.2.0/jade/lib/jade.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="file://$PROJECT_DIR$/../../Курсовая/JADE-doc-4.2.0/jade/doc/api" />
+      <root url="file://$PROJECT_DIR$/../../Курсовая/JADE-doc-4.2.0/jade/doc/tools/sniffer/html/jdoc" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../../Курсовая/JADE-src-4.2.0/jade/src" />
+    </SOURCES>
+  </library>
+</component>
