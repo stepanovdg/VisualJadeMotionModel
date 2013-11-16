@@ -100,7 +100,9 @@ public class Runner {
         args.add("java");
         args.add("-cp");
         args.add(CLASS_PATH);
-        args.add("jade.Boot3");
+        args.add("jade.Boot3" );
+        args.add("-accept-foreign-agents");
+        args.add("true");
         args.add("-gui");
         args.add("jade.Boot");
         args.add("agentA:by.bsu.kurs.stepanov.agents.movable.TrafficTemplate");

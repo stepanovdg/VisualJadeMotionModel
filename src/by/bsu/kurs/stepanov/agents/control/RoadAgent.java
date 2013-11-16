@@ -3,6 +3,7 @@ package by.bsu.kurs.stepanov.agents.control;
 import by.bsu.kurs.stepanov.types.Constants;
 import by.bsu.kurs.stepanov.types.Price;
 import by.bsu.kurs.stepanov.types.PriceRuleObj;
+import by.bsu.kurs.stepanov.types.PurposeHandler;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -119,9 +120,10 @@ public class RoadAgent extends Agent {
     private ACLMessage chooseAction(ACLMessage msg) throws UnreadableException, IOException {
 
         ACLMessage reply = null;
-        switch (msg.getPerformative()) {
+        PurposeHandler ph = (PurposeHandler) msg.getContentObject();
+        switch (ph.getPurpose()) {
             case Constants.ACTION_CALCULATE_DISTANCE: {
-                System.out.println(msg);
+               // System.out.println(msg);
                 //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
                 AID from = msg.getSender();
                 if (roadMotionMode > 0) {
@@ -134,13 +136,16 @@ public class RoadAgent extends Agent {
                         break;
                     }
                 }
-                PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) msg.getContentObject();
+                PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) ph.getObj();
                 dist.setDistance(calculate(dist.getDistance()));
-                ACLMessage ask = new ACLMessage(Constants.ACTION_CALCULATED_DISTANCE);
+                ACLMessage ask = new ACLMessage(8);
+
+
                 AID to = chooseOtherRoadEnd(from);
                 if (to != null) {
-                    ask.setContentObject(dist);
                     ask.addReceiver(to);
+                    PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATED_DISTANCE,dist);
+                    ask.setContentObject(ph1);
                     send(ask);
                 }
                 break;
@@ -157,22 +162,24 @@ public class RoadAgent extends Agent {
                     ask.addReceiver(to);
                     send(ask);
                 }    */
-                System.out.println(msg);
+              //  System.out.println(msg);
                 AID from = msg.getSender();
                 AID to = chooseOtherRoadEnd(from);
-                AID dest = (AID) msg.getContentObject();
+                AID dest = (AID) ph.getObj();
                 if (to != null) {
-                    ACLMessage ask = new ACLMessage(Constants.ACTION_FIND_DESTINATION);
-                    ask.setContentObject(dest);
+                    ACLMessage ask = new ACLMessage(8);
+                    PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_FIND_DESTINATION,dest);
+                                       ask.setContentObject(ph1);
+
                     ask.addReceiver(to);
                     send(ask);
                 }
                 break;
             }
             case Constants.ACTION_START_MOTION: {
-                System.out.println(msg);
+             //   System.out.println(msg);
                 AID transport = msg.getSender();
-                AID from = (AID) msg.getContentObject();
+                AID from = (AID) ph.getObj();
                 AID to = chooseOtherRoadEnd(from);
                 if (to != null) {
                     addToTransportStack(to, transport);
@@ -222,8 +229,9 @@ public class RoadAgent extends Agent {
     }
 
     private void sendStopMotion(AID transport, AID roadEnd) throws IOException {
-        ACLMessage msg = new ACLMessage(Constants.ACTION_STOP_MOTION);
-        msg.setContentObject(roadEnd);
+        ACLMessage msg = new ACLMessage(8);
+        PurposeHandler ph = new PurposeHandler(Constants.ACTION_STOP_MOTION,roadEnd);
+        msg.setContentObject(ph);
         msg.addReceiver(transport);
         send(msg);
     }

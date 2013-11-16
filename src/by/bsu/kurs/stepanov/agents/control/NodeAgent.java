@@ -3,6 +3,7 @@ package by.bsu.kurs.stepanov.agents.control;
 import by.bsu.kurs.stepanov.types.Constants;
 import by.bsu.kurs.stepanov.types.Price;
 import by.bsu.kurs.stepanov.types.PriceRuleObj;
+import by.bsu.kurs.stepanov.types.PurposeHandler;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -13,8 +14,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-
-import static jade.lang.acl.ACLMessage.FAILURE;
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,6 +27,7 @@ public class NodeAgent extends Agent {
     private HashSet<AID> roadSet = new LinkedHashSet<>();
     private HashMap<AID, PriceRuleObj<AID, Price>> distanceTable = new HashMap<>();
     private ACLMessage previousMessage;
+    private ACLMessage previousReply;
 
     public NodeAgent() {
     }
@@ -77,11 +77,13 @@ public class NodeAgent extends Agent {
                 if (msg != null) {
                     ACLMessage reply = null;
                     try {
-                        if(msg.getSender().getLocalName().equals("ams")){
-                            chooseAction(previousMessage);
-                        }else{
+                        if (msg.getSender().getLocalName().equals("ams")) {
+                            System.out.println(msg);
+                            //reply = chooseAction(previousMessage);
+                        } else {
                             reply = chooseAction(msg);
                             previousMessage = msg;
+                            previousReply = reply;
                         }
 
                     } catch (UnreadableException | IOException e) {
@@ -99,16 +101,19 @@ public class NodeAgent extends Agent {
     }
 
     private ACLMessage chooseAction(ACLMessage msg) throws UnreadableException, IOException {
-        System.out.println(msg);
+        // System.out.println(msg);
         ACLMessage reply = null;
-        switch (msg.getPerformative()) {
+        PurposeHandler ph = (PurposeHandler) msg.getContentObject();
+
+        switch (ph.getPurpose()) {
             case Constants.ACTION_FIND_DESTINATION: {
                 //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
-                AID dest = (AID) msg.getContentObject();
+                AID dest = (AID) ph.getObj();
                 if (dest.equals(getAID())) {
                     reply = msg.createReply();
-                    reply.setPerformative(Constants.ACTION_CALCULATE_DISTANCE);
-                    reply.setContentObject(new PriceRuleObj<AID, Price>(dest, new Price()));
+                    reply.setPerformative(8);
+                    PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, new PriceRuleObj<AID, Price>(dest, new Price()));
+                    reply.setContentObject(ph1);
 
                 } else {
                     if (distanceTable.containsKey(dest)) {
@@ -117,9 +122,11 @@ public class NodeAgent extends Agent {
 
                         } else {
                             reply = msg.createReply();
-                            reply.setPerformative(Constants.ACTION_CALCULATE_DISTANCE);
+                            reply.setPerformative(8);
+                            reply.setContent(Constants.ACTION_CALCULATE_DISTANCE);
                             dist.setAddress(dest);
-                            reply.setContentObject(dist);
+                            PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist);
+                            reply.setContentObject(ph1);
                         }
                     } else {
                         distanceTable.put(dest, new PriceRuleObj<AID, Price>());
@@ -130,7 +137,7 @@ public class NodeAgent extends Agent {
             }
             case Constants.ACTION_CALCULATED_DISTANCE: {
                 //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
-                PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) msg.getContentObject();
+                PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) ph.getObj();
                 AID dest = dist.getAddress();
                 if (distanceTable.containsKey(dest)) {
                     PriceRuleObj<AID, Price> previousBestDist = distanceTable.get(dest);
@@ -151,21 +158,26 @@ public class NodeAgent extends Agent {
                 break;
             }
             case Constants.ACTION_ASK_FOR_ROAD_AID: {
-                System.out.println("asked for road aid at" + getName() + " aid" + getAID());
-                AID dest = (AID) msg.getContentObject();
-                System.out.println("get dest" + dest + " aid" + getAID());
+              //  System.out.println("asked for road aid at" + getName() + " aid" + getAID());
+                AID dest = (AID) ph.getObj();
+               // System.out.println("get dest" + dest + " aid" + getAID());
                 if (dest.equals(getAID())) {
                     reply = msg.createReply();
-                    reply.setPerformative(Constants.ACTION_DESTINATED);
+                    reply.setPerformative(8);
+                    PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_DESTINATED);
+                    reply.setContentObject(ph1);
                 } else {
                     if (distanceTable.containsKey(dest)) {
                         PriceRuleObj<AID, Price> dist = distanceTable.get(dest);
                         if (dist.isEmpty()) {
                             //in this case it should never used
+                            askForDistance(dest); // check
                         } else {
                             reply = msg.createReply();
-                            reply.setPerformative(Constants.ACTION_FOUND_DESTINATION);
-                            reply.setContentObject(dist.getAddress());
+                            reply.setPerformative(8);
+                            reply.setContent(Constants.ACTION_FOUND_DESTINATION);
+                            PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_FOUND_DESTINATION, dist.getAddress());
+                            reply.setContentObject(ph1);
                         }
                     } else {
                         distanceTable.put(dest, new PriceRuleObj<AID, Price>());
@@ -175,18 +187,20 @@ public class NodeAgent extends Agent {
                 break;
 
             }
-            case FAILURE: {
+           /* case FAILURE: {
                 reply = chooseAction(previousMessage);
                 break;
-            }
+            }*/
         }
         return reply;  //To change body of created methods use File | Settings | File Templates.
     }
 
     private void askToCalculate(AID destination, PriceRuleObj<AID, Price> dist) throws IOException {
-        ACLMessage msg = new ACLMessage(Constants.ACTION_CALCULATE_DISTANCE);
+        ACLMessage msg = new ACLMessage(8);
+        msg.setContent(Constants.ACTION_CALCULATE_DISTANCE);
         PriceRuleObj<AID, Price> dist1 = new PriceRuleObj<>(destination, dist.getDistance());
-        msg.setContentObject(dist1);
+        PurposeHandler ph = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist1);
+        msg.setContentObject(ph);
         for (AID road : roadSet) {
             if (!road.equals(dist.getAddress())) {
                 msg.addReceiver(road);
@@ -197,11 +211,13 @@ public class NodeAgent extends Agent {
 
     private void askForDistance(AID dest) throws IOException {
         for (AID road : roadSet) {
-            ACLMessage msg = new ACLMessage(Constants.ACTION_FIND_DESTINATION);
-            System.out.println("To road " + road);
-            msg.setContentObject(dest);
+            ACLMessage msg = new ACLMessage(8);
+
+           // System.out.println("To road " + road);
+            PurposeHandler ph = new PurposeHandler(Constants.ACTION_FIND_DESTINATION, dest);
+            msg.setContentObject(ph);
             msg.addReceiver(road);
-            System.out.println("To road  objects setted" + road);
+           // System.out.println("To road  objects set" + road);
             send(msg);
         }
     }

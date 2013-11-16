@@ -1,6 +1,7 @@
 package by.bsu.kurs.stepanov.agents.control;
 
 import by.bsu.kurs.stepanov.types.Constants;
+import by.bsu.kurs.stepanov.types.PurposeHandler;
 import by.bsu.kurs.stepanov.visualisation.Runner;
 import jade.core.AID;
 import jade.core.Agent;
@@ -9,6 +10,7 @@ import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +24,9 @@ import java.util.List;
 public class MapControlAgent extends Agent {
 
     //private static final String JADE_PREFIX = "@10.6.16.254:1099/JADE";
-    private static final String JADE_PREFIX = "@Dmitriy-Note:1099/JADE";
-    private static final boolean ISGUUID = true;
+    //private static final String JADE_PREFIX = "@Dmitriy-Note:1099/JADE";
+    private static final String JADE_PREFIX = "";
+    private static final boolean ISGUUID = AID.ISLOCALNAME;
     private List<String> nodeAgents;
     private List<String> roadAgents;
     private AgentController agc1;
@@ -61,13 +64,15 @@ public class MapControlAgent extends Agent {
             generateRoads(mainContainer);
             generateTransport(mainContainer);
             agc1.start();
-            ACLMessage msg = new ACLMessage(Constants.START);
+            ACLMessage msg = new ACLMessage(8);
+            PurposeHandler ph = new PurposeHandler(Constants.START);
+            msg.setContentObject(ph);
             msg.addReceiver(new AID("CAR1" + JADE_PREFIX,ISGUUID));
             msg.addReceiver(new AID("CAR2" + JADE_PREFIX,ISGUUID));
-            doWait(5000);
+            doWait(50000);
             send(msg);
             System.out.println("Cars start to move");
-        } catch (StaleProxyException e) {
+        } catch (StaleProxyException | IOException e) {
             e.printStackTrace();
         }
 

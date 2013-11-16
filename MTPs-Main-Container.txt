@@ -1,1 +1,1 @@
-http://Dmitriy-Note:7778/acc
+http://127.0.0.1:7778/acc

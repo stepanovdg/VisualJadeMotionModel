@@ -24,16 +24,28 @@ public class Constants {
     public static final int ACTION_TIMER = 30;
 
     public static final int START = 31;   */
-    public static final int ACTION_FIND_DESTINATION = 16;
-    public static final int ACTION_FOUND_DESTINATION = 2;
-    public static final int ACTION_CALCULATE_DISTANCE = 3;
-    public static final int ACTION_CALCULATED_DISTANCE = 4;
-    public static final int ACTION_START_MOTION = 5;
-    public static final int ACTION_STOP_MOTION = 12;
-    public static final int ACTION_ASK_FOR_ROAD_AID = 7;
-    public static final int ACTION_DESTINATED = 8;
-    public static final int ACTION_TIMER = 9;
+    public static final String ACTION_FIND_DESTINATION = "ACTION_FIND_DESTINATION";
+    public static final String ACTION_FOUND_DESTINATION = "ACTION_FOUND_DESTINATION";
+    public static final String ACTION_CALCULATE_DISTANCE = "ACTION_CALCULATE_DISTANCE";
+    public static final String ACTION_CALCULATED_DISTANCE = "ACTION_CALCULATED_DISTANCE";
+    public static final String ACTION_START_MOTION = "ACTION_START_MOTION";
+    public static final String ACTION_STOP_MOTION = "ACTION_STOP_MOTION";
+    public static final String ACTION_ASK_FOR_ROAD_AID = "ACTION_ASK_FOR_ROAD_AID";
+    public static final String ACTION_DESTINATED = "ACTION_DESTINATED";
+    public static final String ACTION_TIMER = "ACTION_TIMER";
 
-    public static final int START = 11;
+    public static final String START = "START";
+
+   /* public static final int ACTION_FIND_DESTINATION = 16;
+        public static final int ACTION_FOUND_DESTINATION = 2;
+        public static final int ACTION_CALCULATE_DISTANCE = 3;
+        public static final int ACTION_CALCULATED_DISTANCE = 4;
+        public static final int ACTION_START_MOTION = 5;
+        public static final int ACTION_STOP_MOTION = 12;
+        public static final int ACTION_ASK_FOR_ROAD_AID = 7;
+        public static final int ACTION_DESTINATED = 8;
+        public static final int ACTION_TIMER = 9;
+
+        public static final int START = 11;       */
 
 }

@@ -1,6 +1,7 @@
 package by.bsu.kurs.stepanov.agents.movable;
 
 import by.bsu.kurs.stepanov.types.Constants;
+import by.bsu.kurs.stepanov.types.PurposeHandler;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -68,18 +69,19 @@ public class TransportAgent extends Agent {
     }
 
     private ACLMessage chooseAction(ACLMessage msg) throws UnreadableException, IOException {
-        System.out.println(msg);
+       // System.out.println(msg);
         ACLMessage reply = null;
-        switch (msg.getPerformative()) {
+        PurposeHandler ph = (PurposeHandler) msg.getContentObject();
+        switch (ph.getPurpose()) {
             case Constants.ACTION_FOUND_DESTINATION: {
-                AID road = (AID) msg.getContentObject();
+                AID road = (AID) ph.getObj();
                 startMotion(road);
                 setSituated(road);
                 break;
             }
             case Constants.ACTION_STOP_MOTION: {
                 AID road = msg.getSender();
-                AID toNode = (AID) msg.getContentObject();
+                AID toNode = (AID) ph.getObj();
                 askForDestination(toNode);
                 break;
             }
@@ -100,16 +102,18 @@ public class TransportAgent extends Agent {
     }
 
     private void askForDestination(AID toNode) throws IOException {
-        ACLMessage msg = new ACLMessage(Constants.ACTION_ASK_FOR_ROAD_AID);
-        msg.setContentObject(getDestination());
+        ACLMessage msg = new ACLMessage(8);
+        PurposeHandler ph = new PurposeHandler(Constants.ACTION_ASK_FOR_ROAD_AID, getDestination());
+        msg.setContentObject(ph);
         msg.addReceiver(toNode);
         setSituated(toNode);
         send(msg);
     }
 
     private void startMotion(AID road) throws IOException {
-        ACLMessage msg = new ACLMessage(Constants.ACTION_START_MOTION);
-        msg.setContentObject(getSituated());
+        ACLMessage msg = new ACLMessage(8);
+        PurposeHandler ph = new PurposeHandler(Constants.ACTION_START_MOTION, getDestination());
+        msg.setContentObject(ph);
         msg.addReceiver(road);
         send(msg);
     }
