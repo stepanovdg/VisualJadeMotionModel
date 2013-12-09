@@ -7,7 +7,7 @@ package by.bsu.kurs.stepanov.types;
  * Time: 15:39
  * To change this template use File | Settings | File Templates.
  */
-public class Price implements SerializeComparable {
+public class Price extends AbstractSerializeComparable {
     public int getDistance() {
         return distance;
     }
@@ -58,8 +58,15 @@ public class Price implements SerializeComparable {
      */
     @Override
     public int compareTo(Object o) {
-        if(this.distance < ((Price) o).distance) return -1;
-        if(this.distance > ((Price) o).distance) return 1;
+        if (o instanceof Price) {
+            if (this.distance < ((Price) o).distance) return -1;
+            if (this.distance > ((Price) o).distance) return 1;
+        }
+        if (o instanceof PriceRuleObj) {
+            o = ((PriceRuleObj)o).getDistance();
+            if (this.distance < ((Price) o).distance) return -1;
+            if (this.distance > ((Price) o).distance) return 1;
+        }
         return 0;
     }
 }

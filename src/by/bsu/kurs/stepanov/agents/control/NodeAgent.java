@@ -75,28 +75,28 @@ public class NodeAgent extends Agent {
             public void action() {
                 ACLMessage msg = receive();
                 if (msg != null) {
-                    ACLMessage reply = null;
-                    try {
-                        if (msg.getSender().getLocalName().equals("ams")) {
-                            System.out.println(msg);
-                            //reply = chooseAction(previousMessage);
-                        } else {
-                            reply = chooseAction(msg);
-                            previousMessage = msg;
-                            previousReply = reply;
-                        }
+            ACLMessage reply = null;
+                try {
+                    if (msg.getSender().getLocalName().equals("ams")) {
+                        System.out.println(msg);
+                        //reply = chooseAction(previousMessage);
+                    } else {
+                        reply = chooseAction(msg);
+                        previousMessage = msg;
+                        previousReply = reply;
+                    }
 
-                    } catch (UnreadableException | IOException e) {
-                        e.printStackTrace();  //TODO.
-                    }
-                    if (reply != null) {
-                        send(reply); //отправляем сообщения
-                    }
+                } catch (UnreadableException | IOException e) {
+                    e.printStackTrace();  //TODO.
+                }
+                if (reply != null) {
+                    send(reply); //отправляем сообщения
+                }
 
                 } else {
                     block();
-                }
             }
+    }
         });
     }
 
@@ -111,7 +111,7 @@ public class NodeAgent extends Agent {
                 AID dest = (AID) ph.getObj();
                 if (dest.equals(getAID())) {
                     reply = msg.createReply();
-                    reply.setPerformative(8);
+                    reply.setPerformative(7);
                     PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, new PriceRuleObj<AID, Price>(dest, new Price()));
                     reply.setContentObject(ph1);
 
@@ -122,7 +122,7 @@ public class NodeAgent extends Agent {
 
                         } else {
                             reply = msg.createReply();
-                            reply.setPerformative(8);
+                            reply.setPerformative(7);
                             reply.setContent(Constants.ACTION_CALCULATE_DISTANCE);
                             dist.setAddress(dest);
                             PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist);
@@ -158,12 +158,12 @@ public class NodeAgent extends Agent {
                 break;
             }
             case Constants.ACTION_ASK_FOR_ROAD_AID: {
-              //  System.out.println("asked for road aid at" + getName() + " aid" + getAID());
+                //  System.out.println("asked for road aid at" + getName() + " aid" + getAID());
                 AID dest = (AID) ph.getObj();
-               // System.out.println("get dest" + dest + " aid" + getAID());
+                // System.out.println("get dest" + dest + " aid" + getAID());
                 if (dest.equals(getAID())) {
                     reply = msg.createReply();
-                    reply.setPerformative(8);
+                    reply.setPerformative(7);
                     PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_DESTINATED);
                     reply.setContentObject(ph1);
                 } else {
@@ -174,7 +174,7 @@ public class NodeAgent extends Agent {
                             askForDistance(dest); // check
                         } else {
                             reply = msg.createReply();
-                            reply.setPerformative(8);
+                            reply.setPerformative(7);
                             reply.setContent(Constants.ACTION_FOUND_DESTINATION);
                             PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_FOUND_DESTINATION, dist.getAddress());
                             reply.setContentObject(ph1);
@@ -196,7 +196,7 @@ public class NodeAgent extends Agent {
     }
 
     private void askToCalculate(AID destination, PriceRuleObj<AID, Price> dist) throws IOException {
-        ACLMessage msg = new ACLMessage(8);
+        ACLMessage msg = new ACLMessage(7);
         msg.setContent(Constants.ACTION_CALCULATE_DISTANCE);
         PriceRuleObj<AID, Price> dist1 = new PriceRuleObj<>(destination, dist.getDistance());
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist1);
@@ -211,7 +211,7 @@ public class NodeAgent extends Agent {
 
     private void askForDistance(AID dest) throws IOException {
         for (AID road : roadSet) {
-            ACLMessage msg = new ACLMessage(8);
+            ACLMessage msg = new ACLMessage(7);
 
            // System.out.println("To road " + road);
             PurposeHandler ph = new PurposeHandler(Constants.ACTION_FIND_DESTINATION, dest);

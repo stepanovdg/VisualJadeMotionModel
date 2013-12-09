@@ -100,20 +100,20 @@ public class RoadAgent extends Agent {
             public void action() {
                 ACLMessage msg = receive();
                 if (msg != null) {
-                    ACLMessage reply = null;
-                    try {
-                        reply = chooseAction(msg);
-                    } catch (UnreadableException | IOException e) {
-                        e.printStackTrace();  //TODO.
-                    }
-                    if (reply != null) {
-                        send(reply); //отправляем сообщения
-                    }
+            ACLMessage reply = null;
+                try {
+                    reply = chooseAction(msg);
+                } catch (UnreadableException | IOException e) {
+                    e.printStackTrace();  //TODO.
+                }
+                if (reply != null) {
+                    send(reply); //отправляем сообщения
+                }
                 } else {
                     block();
-                }
-
             }
+
+    }
         });
     }
 
@@ -123,7 +123,7 @@ public class RoadAgent extends Agent {
         PurposeHandler ph = (PurposeHandler) msg.getContentObject();
         switch (ph.getPurpose()) {
             case Constants.ACTION_CALCULATE_DISTANCE: {
-               // System.out.println(msg);
+                // System.out.println(msg);
                 //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
                 AID from = msg.getSender();
                 if (roadMotionMode > 0) {
@@ -138,13 +138,13 @@ public class RoadAgent extends Agent {
                 }
                 PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) ph.getObj();
                 dist.setDistance(calculate(dist.getDistance()));
-                ACLMessage ask = new ACLMessage(8);
+                ACLMessage ask = new ACLMessage(7);
 
 
                 AID to = chooseOtherRoadEnd(from);
                 if (to != null) {
                     ask.addReceiver(to);
-                    PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATED_DISTANCE,dist);
+                    PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATED_DISTANCE, dist);
                     ask.setContentObject(ph1);
                     send(ask);
                 }
@@ -162,14 +162,14 @@ public class RoadAgent extends Agent {
                     ask.addReceiver(to);
                     send(ask);
                 }    */
-              //  System.out.println(msg);
+                //  System.out.println(msg);
                 AID from = msg.getSender();
                 AID to = chooseOtherRoadEnd(from);
                 AID dest = (AID) ph.getObj();
                 if (to != null) {
-                    ACLMessage ask = new ACLMessage(8);
-                    PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_FIND_DESTINATION,dest);
-                                       ask.setContentObject(ph1);
+                    ACLMessage ask = new ACLMessage(7);
+                    PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_FIND_DESTINATION, dest);
+                    ask.setContentObject(ph1);
 
                     ask.addReceiver(to);
                     send(ask);
@@ -177,7 +177,7 @@ public class RoadAgent extends Agent {
                 break;
             }
             case Constants.ACTION_START_MOTION: {
-             //   System.out.println(msg);
+                //   System.out.println(msg);
                 AID transport = msg.getSender();
                 AID from = (AID) ph.getObj();
                 AID to = chooseOtherRoadEnd(from);
@@ -229,8 +229,8 @@ public class RoadAgent extends Agent {
     }
 
     private void sendStopMotion(AID transport, AID roadEnd) throws IOException {
-        ACLMessage msg = new ACLMessage(8);
-        PurposeHandler ph = new PurposeHandler(Constants.ACTION_STOP_MOTION,roadEnd);
+        ACLMessage msg = new ACLMessage(7);
+        PurposeHandler ph = new PurposeHandler(Constants.ACTION_STOP_MOTION, roadEnd);
         msg.setContentObject(ph);
         msg.addReceiver(transport);
         send(msg);

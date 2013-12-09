@@ -1,6 +1,5 @@
 package by.bsu.kurs.stepanov.types;
 
-import jade.util.leap.Comparable;
 import jade.util.leap.Serializable;
 
 /**
@@ -10,7 +9,7 @@ import jade.util.leap.Serializable;
  * Time: 13:57
  * To change this template use File | Settings | File Templates.
  */
-public class PriceRuleObj<T extends Serializable,E extends SerializeComparable>  implements Comparable, Serializable{
+public class PriceRuleObj<T extends Serializable,E  extends AbstractSerializeComparable>  extends AbstractSerializeComparable{
 
     private T t;
     private E e;

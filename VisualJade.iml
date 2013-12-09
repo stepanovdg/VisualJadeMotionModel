@@ -9,6 +9,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="JADE-all-4.2" level="project" />
     <orderEntry type="library" exported="" name="JavaFX" level="application" />
+    <orderEntry type="library" name="log4j-1.2.14" level="application" />
   </component>
 </module>
 

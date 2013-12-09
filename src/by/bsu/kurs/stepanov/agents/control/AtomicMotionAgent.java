@@ -33,7 +33,7 @@ public class AtomicMotionAgent extends Agent {
     protected void setup() {
         init(getArguments());
         System.out.println("Atomic Timer " + getAID().getName() + " ready to work.");
-        final ACLMessage msg = new ACLMessage(8);
+        final ACLMessage msg = new ACLMessage(7);
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_TIMER);
         try {
             msg.setContentObject(ph);

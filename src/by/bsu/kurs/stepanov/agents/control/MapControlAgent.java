@@ -25,7 +25,7 @@ public class MapControlAgent extends Agent {
 
     //private static final String JADE_PREFIX = "@10.6.16.254:1099/JADE";
     //private static final String JADE_PREFIX = "@Dmitriy-Note:1099/JADE";
-    private static final String JADE_PREFIX = "";
+    private static final String JADE_PREFIX = "";//"192.168.1.3:1099/JADE";
     private static final boolean ISGUUID = AID.ISLOCALNAME;
     private List<String> nodeAgents;
     private List<String> roadAgents;
@@ -64,11 +64,11 @@ public class MapControlAgent extends Agent {
             generateRoads(mainContainer);
             generateTransport(mainContainer);
             agc1.start();
-            ACLMessage msg = new ACLMessage(8);
+            ACLMessage msg = new ACLMessage(7);
             PurposeHandler ph = new PurposeHandler(Constants.START);
             msg.setContentObject(ph);
             msg.addReceiver(new AID("CAR1" + JADE_PREFIX,ISGUUID));
-            msg.addReceiver(new AID("CAR2" + JADE_PREFIX,ISGUUID));
+            //msg.addReceiver(new AID("CAR2" + JADE_PREFIX,ISGUUID));
             doWait(50000);
             send(msg);
             System.out.println("Cars start to move");
@@ -89,7 +89,7 @@ public class MapControlAgent extends Agent {
     }
 
     private void generateRoads(AgentContainer mainContainer) throws StaleProxyException {
-        createRoad("NON1",mainContainer,3,new AID("N0" + JADE_PREFIX,ISGUUID),new AID("N1" + JADE_PREFIX,ISGUUID),0);
+        createRoad("N0N1",mainContainer,3,new AID("N0" + JADE_PREFIX,ISGUUID),new AID("N1" + JADE_PREFIX,ISGUUID),0);
         createRoad("N1N2",mainContainer,4,new AID("N1" + JADE_PREFIX,ISGUUID),new AID("N2" + JADE_PREFIX,ISGUUID),0);
         createRoad("N1N3",mainContainer,4,new AID("N1" + JADE_PREFIX,ISGUUID),new AID("N3" + JADE_PREFIX,ISGUUID),0);
         createRoad("N3N5",mainContainer,4,new AID("N3" + JADE_PREFIX,ISGUUID),new AID("N5" + JADE_PREFIX,ISGUUID),0);
@@ -116,7 +116,7 @@ public class MapControlAgent extends Agent {
         AID road8 = new AID("N5N7" + JADE_PREFIX,ISGUUID);
         AgentController agc;
         agc = Runner.createNodeAgent("N0", mainContainer, new Object[]{road1});
-        nodeAgents.add("NO");
+        nodeAgents.add("N0");
         agc.start();
         agc = Runner.createNodeAgent("N1", mainContainer, new Object[]{road1, road2, road3});
         nodeAgents.add("N1");

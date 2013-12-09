@@ -102,7 +102,7 @@ public class TransportAgent extends Agent {
     }
 
     private void askForDestination(AID toNode) throws IOException {
-        ACLMessage msg = new ACLMessage(8);
+        ACLMessage msg = new ACLMessage(7);
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_ASK_FOR_ROAD_AID, getDestination());
         msg.setContentObject(ph);
         msg.addReceiver(toNode);
@@ -111,7 +111,7 @@ public class TransportAgent extends Agent {
     }
 
     private void startMotion(AID road) throws IOException {
-        ACLMessage msg = new ACLMessage(8);
+        ACLMessage msg = new ACLMessage(7);
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_START_MOTION, getDestination());
         msg.setContentObject(ph);
         msg.addReceiver(road);

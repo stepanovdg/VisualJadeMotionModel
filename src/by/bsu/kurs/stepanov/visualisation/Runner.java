@@ -37,11 +37,16 @@ public class Runner {
 
        /* jade.Boot
         jade.BootGUI.   */
+        BootProfileImpl bootProfile = new BootProfileImpl();
+        bootProfile.setParameter("-accept-foreign-agents","true");
+        bootProfile.setParameter("-platform-id","note");
+        bootProfile.setParameter("-host","note");
         AgentContainer cont = runtime.createMainContainer(new BootProfileImpl());
         runtime.setCloseVM(true);
         try {
             //runtime.startUp(new BootProfileImpl());
             AgentController agentController1 = createMapAgent("Minsk",cont,new Object[]{});
+            cont.getContainerName();
             //AgentController agentController2 = cont.createNewAgent("agentB", "by.bsu.kurs.stepanov.agents.control.PointTemplate", new Object[]{});
             agentController1.start();
             agentController1 = cont.createNewAgent("RMA","jade.tools.rma.rma",null);
