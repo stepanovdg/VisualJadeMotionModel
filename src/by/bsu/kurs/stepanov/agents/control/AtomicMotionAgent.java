@@ -54,6 +54,7 @@ public class AtomicMotionAgent extends Agent {
             @Override
             protected void onWake() {
                 send(msg);
+                reset();
             }
 
         });

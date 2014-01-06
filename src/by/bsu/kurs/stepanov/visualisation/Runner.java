@@ -3,7 +3,6 @@ package by.bsu.kurs.stepanov.visualisation;
 import jade.BootProfileImpl;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
-import jade.wrapper.ControllerException;
 import jade.wrapper.StaleProxyException;
 
 import java.io.BufferedInputStream;
@@ -29,14 +28,11 @@ public class Runner {
 
     public static void main(String[] args) {
         // new Runner().launch(args);
-        new Runner().run(args);
+        new Runner().run(null);
     }
 
-    private void run(String[] args) {
+    public void run(MapFX mapFX) {
         jade.core.Runtime runtime = jade.core.Runtime.instance();
-
-       /* jade.Boot
-        jade.BootGUI.   */
         BootProfileImpl bootProfile = new BootProfileImpl();
         bootProfile.setParameter("-accept-foreign-agents","true");
         bootProfile.setParameter("-platform-id","note");
@@ -45,17 +41,11 @@ public class Runner {
         runtime.setCloseVM(true);
         try {
             //runtime.startUp(new BootProfileImpl());
-            AgentController agentController1 = createMapAgent("Minsk",cont,new Object[]{});
-            cont.getContainerName();
-            //AgentController agentController2 = cont.createNewAgent("agentB", "by.bsu.kurs.stepanov.agents.control.PointTemplate", new Object[]{});
+            AgentController agentController1 = createMapAgent("Minsk",cont,new Object[]{mapFX});
             agentController1.start();
-            agentController1 = cont.createNewAgent("RMA","jade.tools.rma.rma",null);
-            agentController1.start();
-           // cont.start();
-
+            //agentController1 = cont.createNewAgent("RMA","jade.tools.rma.rma",null);
+            //agentController1.start();
         } catch (StaleProxyException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (ControllerException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }

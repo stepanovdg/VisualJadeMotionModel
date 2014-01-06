@@ -72,6 +72,7 @@ public class TransportAgent extends Agent {
        // System.out.println(msg);
         ACLMessage reply = null;
         PurposeHandler ph = (PurposeHandler) msg.getContentObject();
+        System.out.print("CAR purpose= " + ph.getPurpose() + this.getAID()+"\n");
         switch (ph.getPurpose()) {
             case Constants.ACTION_FOUND_DESTINATION: {
                 AID road = (AID) ph.getObj();
@@ -112,7 +113,7 @@ public class TransportAgent extends Agent {
 
     private void startMotion(AID road) throws IOException {
         ACLMessage msg = new ACLMessage(7);
-        PurposeHandler ph = new PurposeHandler(Constants.ACTION_START_MOTION, getDestination());
+        PurposeHandler ph = new PurposeHandler(Constants.ACTION_START_MOTION, getSituated());
         msg.setContentObject(ph);
         msg.addReceiver(road);
         send(msg);

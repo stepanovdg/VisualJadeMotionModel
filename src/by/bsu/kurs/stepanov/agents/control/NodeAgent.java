@@ -26,6 +26,7 @@ public class NodeAgent extends Agent {
 
     private HashSet<AID> roadSet = new LinkedHashSet<>();
     private HashMap<AID, PriceRuleObj<AID, Price>> distanceTable = new HashMap<>();
+    private HashMap<AID, AID> carSet = new HashMap<>();
     private ACLMessage previousMessage;
     private ACLMessage previousReply;
 
@@ -68,35 +69,35 @@ public class NodeAgent extends Agent {
     @Override
     protected void setup() {
         init(getArguments());
-        System.out.println("Node " + getAID().getName() + " ready to work.");
+        paintLog(Constants.READY);
 
         addBehaviour(new CyclicBehaviour(this) {
 
             public void action() {
                 ACLMessage msg = receive();
                 if (msg != null) {
-            ACLMessage reply = null;
-                try {
-                    if (msg.getSender().getLocalName().equals("ams")) {
-                        System.out.println(msg);
-                        //reply = chooseAction(previousMessage);
-                    } else {
-                        reply = chooseAction(msg);
-                        previousMessage = msg;
-                        previousReply = reply;
-                    }
+                    ACLMessage reply = null;
+                    try {
+                        if (msg.getSender().getLocalName().equals("ams")) {
+                            //paintLog(msg);
+                            //reply = chooseAction(previousMessage);
+                        } else {
+                            reply = chooseAction(msg);
+                            previousMessage = msg;
+                            previousReply = reply;
+                        }
 
-                } catch (UnreadableException | IOException e) {
-                    e.printStackTrace();  //TODO.
-                }
-                if (reply != null) {
-                    send(reply); //отправляем сообщения
-                }
+                    } catch (UnreadableException | IOException e) {
+                        e.printStackTrace();  //TODO.
+                    }
+                    if (reply != null) {
+                        send(reply); //отправляем сообщения
+                    }
 
                 } else {
                     block();
+                }
             }
-    }
         });
     }
 
@@ -104,12 +105,13 @@ public class NodeAgent extends Agent {
         // System.out.println(msg);
         ACLMessage reply = null;
         PurposeHandler ph = (PurposeHandler) msg.getContentObject();
-
+        paintLog(ph.getPurpose());
         switch (ph.getPurpose()) {
             case Constants.ACTION_FIND_DESTINATION: {
                 //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
                 AID dest = (AID) ph.getObj();
                 if (dest.equals(getAID())) {
+                    // Found destination ask previous to calculate distance
                     reply = msg.createReply();
                     reply.setPerformative(7);
                     PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, new PriceRuleObj<AID, Price>(dest, new Price()));
@@ -123,7 +125,7 @@ public class NodeAgent extends Agent {
                         } else {
                             reply = msg.createReply();
                             reply.setPerformative(7);
-                            reply.setContent(Constants.ACTION_CALCULATE_DISTANCE);
+                            //reply.setContent(Constants.ACTION_CALCULATE_DISTANCE);
                             dist.setAddress(dest);
                             PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist);
                             reply.setContentObject(ph1);
@@ -151,8 +153,11 @@ public class NodeAgent extends Agent {
                             distanceTable.put(dest, dist);
                         }
                     }
-
+                    if(carSet.containsValue(dest)){
+                        permitMotion(dest);
+                    }
                 } else {
+                    System.out.println("Tupic in"+getAID()+"while searching "+dest);
                     //bad behaviour
                 }
                 break;
@@ -171,6 +176,7 @@ public class NodeAgent extends Agent {
                         PriceRuleObj<AID, Price> dist = distanceTable.get(dest);
                         if (dist.isEmpty()) {
                             //in this case it should never used
+                            System.out.println("Unpermitable metjhod");
                             askForDistance(dest); // check
                         } else {
                             reply = msg.createReply();
@@ -181,6 +187,7 @@ public class NodeAgent extends Agent {
                         }
                     } else {
                         distanceTable.put(dest, new PriceRuleObj<AID, Price>());
+                        carSet.put(msg.getSender(),dest);
                         askForDistance(dest);
                     }
                 }
@@ -195,9 +202,22 @@ public class NodeAgent extends Agent {
         return reply;  //To change body of created methods use File | Settings | File Templates.
     }
 
+    private void permitMotion(AID destination) throws IOException {
+        ACLMessage msg = new ACLMessage(7);
+        PurposeHandler ph = new PurposeHandler(Constants.ACTION_FOUND_DESTINATION, distanceTable.get(destination).getAddress());
+        msg.setContentObject(ph);
+        for (AID car : carSet.keySet()) {
+            AID dest = carSet.get(car);
+            if (dest.equals(destination)) {
+                msg.addReceiver(car);
+            }
+        }
+        send(msg);
+    }
+
     private void askToCalculate(AID destination, PriceRuleObj<AID, Price> dist) throws IOException {
         ACLMessage msg = new ACLMessage(7);
-        msg.setContent(Constants.ACTION_CALCULATE_DISTANCE);
+        //msg.setContent(Constants.ACTION_CALCULATE_DISTANCE);
         PriceRuleObj<AID, Price> dist1 = new PriceRuleObj<>(destination, dist.getDistance());
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist1);
         msg.setContentObject(ph);
@@ -213,12 +233,19 @@ public class NodeAgent extends Agent {
         for (AID road : roadSet) {
             ACLMessage msg = new ACLMessage(7);
 
-           // System.out.println("To road " + road);
+            // System.out.println("To road " + road);
             PurposeHandler ph = new PurposeHandler(Constants.ACTION_FIND_DESTINATION, dest);
             msg.setContentObject(ph);
             msg.addReceiver(road);
-           // System.out.println("To road  objects set" + road);
+            // System.out.println("To road  objects set" + road);
             send(msg);
         }
+    }
+
+    private void paintLog(String event){
+        ACLMessage msg = new ACLMessage(7);
+        msg.addReceiver(new AID("Minsk",AID.ISLOCALNAME));
+        msg.setContent(event);
+        send(msg);
     }
 }

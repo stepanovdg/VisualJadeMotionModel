@@ -8,7 +8,7 @@ package by.bsu.kurs.stepanov.types;
  * To change this template use File | Settings | File Templates.
  */
 public class Constants {
-    public static final long POLLING_TIME = 2000;
+    public static final long POLLING_TIME = 10000;
     public static final String COORDINATE_SPLITTER = ":";
     public static final String AID_NAME_GUID_SPLITTER = ":";
     public static final String TRAJECTORY_SPLITTER = "->";
@@ -33,6 +33,7 @@ public class Constants {
     public static final String ACTION_ASK_FOR_ROAD_AID = "ACTION_ASK_FOR_ROAD_AID";
     public static final String ACTION_DESTINATED = "ACTION_DESTINATED";
     public static final String ACTION_TIMER = "ACTION_TIMER";
+    public static final String READY = "READY";
 
     public static final String START = "START";
 

@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
     <style type="text/css">
-        html { height: 100% }
-        body { height: 100%; margin: 0; padding: 0 }
-        #map_canvas { height: 100% }
+        html {
+            height: 100%
+        }
+
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0
+        }
+
+        #map_canvas {
+            height: 100%
+        }
     </style>
     <script type="text/javascript"
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdK82vo9t-CEFEp3fe9KKNmHd0cOiT7S8&sensor=false">
@@ -14,7 +24,7 @@
         var map;
         var marker;
 
-        function get_click_position(event){
+        function get_click_position(event) {
             var location = event.latLng;
             var lat = location.lat();
             var lng = location.lng();
@@ -27,11 +37,36 @@
             marker.setPosition(clickLatLng);
         }
 
-        function startJumping(){
+        function addMarkerPosition(lat, lng) {
+            var clickLatLng = new google.maps.LatLng(lat, lng);
+            var nodeMarker = new google.maps.Marker({
+                position: clickLatLng,
+                map: map,
+                icon: "red-dot.png"
+            });
+        }
+
+        function addRoad(lat, lng,lat1, lng1) {
+            var latLng = new google.maps.LatLng(lat, lng);
+            var latLng1 = new google.maps.LatLng(lat1, lng1);
+            var myCoordinates = [
+            latLng,latLng1
+            ];
+            var polyOptions = {
+            path: myCoordinates,
+            strokeColor: "#FF0000",
+            strokeOpacity: 1,
+            strokeWeight: 3
+            }
+            var it = new google.maps.Polyline(polyOptions);
+            it.setMap(map);
+        }
+
+        function startJumping() {
             marker.setAnimation(google.maps.Animation.BOUNCE);
         }
 
-        function stopJumping(){
+        function stopJumping() {
             marker.setAnimation(google.maps.Animation.BOUNCE);
         }
 
@@ -73,10 +108,10 @@
         }
 
         function initialize() {
-            var defLatLng = new google.maps.LatLng(59.95632093391832, 30.309906005859375);
+            var defLatLng = new google.maps.LatLng(54.92082843149136, 23.829345703125);
             var mapOptions = {
                 center: defLatLng,
-                zoom: 3,
+                zoom: 7,
                 mapTypeId: google.maps.MapTypeId.ROADMAP,
                 disableDefaultUI: true,
                 panControl: false
@@ -87,18 +122,18 @@
             marker = new google.maps.Marker({
                 position: defLatLng,
                 map: map,
-                icon: "img/Pin.png"
+                icon: "red-dot.png"
             });
 
             app.handle(0, 0);
         }
 
         function setDarkMarkerIcon() {
-            marker.setIcon("img/Pin.png");
+            marker.setIcon("red-dot.png");
         }
 
         function setLightMarkerIcon() {
-            marker.setIcon("img/Pin_s.png");
+            marker.setIcon("blue-dot.png");
         }
 
     </script>

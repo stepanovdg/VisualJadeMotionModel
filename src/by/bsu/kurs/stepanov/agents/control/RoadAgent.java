@@ -94,26 +94,26 @@ public class RoadAgent extends Agent {
     @Override
     protected void setup() {
         init(getArguments());
-        System.out.println("Road " + getAID().getName() + " ready to work.");
+        paintLog(Constants.READY);
         addBehaviour(new CyclicBehaviour(this) {
 
             public void action() {
                 ACLMessage msg = receive();
                 if (msg != null) {
-            ACLMessage reply = null;
-                try {
-                    reply = chooseAction(msg);
-                } catch (UnreadableException | IOException e) {
-                    e.printStackTrace();  //TODO.
-                }
-                if (reply != null) {
-                    send(reply); //отправляем сообщения
-                }
+                    ACLMessage reply = null;
+                    try {
+                        reply = chooseAction(msg);
+                    } catch (UnreadableException | IOException e) {
+                        e.printStackTrace();  //TODO.
+                    }
+                    if (reply != null) {
+                        send(reply); //отправляем сообщения
+                    }
                 } else {
                     block();
-            }
+                }
 
-    }
+            }
         });
     }
 
@@ -121,6 +121,10 @@ public class RoadAgent extends Agent {
 
         ACLMessage reply = null;
         PurposeHandler ph = (PurposeHandler) msg.getContentObject();
+        System.out.print(!ph.getPurpose().equals(Constants.ACTION_TIMER) ? "purpose= " + ph.getPurpose() + this.getAID() + "\n" : ".");
+        if (ph.getPurpose().equals(Constants.ACTION_START_MOTION)) {
+            System.out.println("Road recevi mess" + (AID) ph.getObj());
+        }
         switch (ph.getPurpose()) {
             case Constants.ACTION_CALCULATE_DISTANCE: {
                 // System.out.println(msg);
@@ -177,7 +181,7 @@ public class RoadAgent extends Agent {
                 break;
             }
             case Constants.ACTION_START_MOTION: {
-                //   System.out.println(msg);
+                System.out.println(msg);
                 AID transport = msg.getSender();
                 AID from = (AID) ph.getObj();
                 AID to = chooseOtherRoadEnd(from);
@@ -212,9 +216,11 @@ public class RoadAgent extends Agent {
     private void moveInStacks() throws IOException {
         if (toFirstRoadEndStack[0] != null) {
             sendStopMotion(toFirstRoadEndStack[0], firstRoadEnd);
+            toFirstRoadEndStack[0] = null;
         }
         if (toSecondRoadEndStack[length] != null) {
             sendStopMotion(toSecondRoadEndStack[length], secondRoadEnd);
+            toSecondRoadEndStack[length] = null;
         }
         for (int i = 0; i < length; i++) {
             if (toFirstRoadEndStack[i + 1] != null) {
@@ -242,6 +248,7 @@ public class RoadAgent extends Agent {
             System.out.println("RoadEndNotFound");
             return;
         }
+        System.out.println("Added transport " + transport + "going to " + destinationRoadEnd);
         getWaitForTimer().put(transport, to);
     }
 
@@ -260,5 +267,12 @@ public class RoadAgent extends Agent {
     private Price calculate(Price distance) {
         distance.setDistance(distance.getDistance() + length);
         return distance;
+    }
+
+    private void paintLog(String event) {
+        ACLMessage msg = new ACLMessage(7);
+        msg.addReceiver(new AID("Minsk", AID.ISLOCALNAME));
+        msg.setContent(event);
+        send(msg);
     }
 }

@@ -1,5 +1,6 @@
 package by.bsu.kurs.stepanov.visualisation;
 
+
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -9,6 +10,9 @@ import javafx.scene.Parent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
+
+import java.net.URL;
+
 
 /**
  * Created by IntelliJ IDEA.
@@ -37,7 +41,8 @@ public class GoogleMap extends Parent {
     private void initMap() {
         webView = new WebView();
         webEngine = webView.getEngine();
-        webEngine.load(getClass().getResource("map.html").toExternalForm());
+        URL mapUrl = getClass().getClassLoader().getResource("map.html");
+        webEngine.load(mapUrl != null ? mapUrl.toExternalForm() : null);
         ready = false;
         webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
             @Override
@@ -99,6 +104,12 @@ public class GoogleMap extends Parent {
         invokeJS("setMarkerPosition(" + sLat + ", " + sLng + ")");
     }
 
+    public void addMarkerPosition(double lat, double lng) {
+        String sLat = Double.toString(lat);
+        String sLng = Double.toString(lng);
+        invokeJS("addMarkerPosition(" + sLat + ", " + sLng + ")");
+    }
+
     public void setMapCenter(double lat, double lng) {
         String sLat = Double.toString(lat);
         String sLng = Double.toString(lng);
@@ -141,4 +152,11 @@ public class GoogleMap extends Parent {
         return webView.widthProperty();
     }
 
+    public void addRoad(Double latitude, Double longitude, Double latitude1, Double longitude1) {
+        String fromLat = Double.toString(latitude);
+        String fromLng = Double.toString(longitude);
+        String toLat = Double.toString(latitude1);
+        String toLng = Double.toString(longitude1);
+        invokeJS("addRoad(" + fromLat + ", " + fromLng + ", " + toLat + ", " + toLng + ")");
+    }
 }

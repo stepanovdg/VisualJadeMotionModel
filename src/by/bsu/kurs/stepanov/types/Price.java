@@ -16,7 +16,7 @@ public class Price extends AbstractSerializeComparable {
         this.distance = distance;
     }
 
-    private int distance;
+    private int distance = 0;
 
     /**
      * Compares this object with the specified object for order.  Returns a
