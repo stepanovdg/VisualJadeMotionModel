@@ -9,6 +9,7 @@ package by.bsu.kurs.stepanov.types;
  */
 public class Constants {
     public static final long POLLING_TIME = 10000;
+    public static final long TRANSLATE_DURATION = 1000;
     public static final String COORDINATE_SPLITTER = ":";
     public static final String AID_NAME_GUID_SPLITTER = ":";
     public static final String TRAJECTORY_SPLITTER = "->";
@@ -36,6 +37,12 @@ public class Constants {
     public static final String READY = "READY";
 
     public static final String START = "START";
+    public static final int MESSAGE = 7;
+    public static final String LOG_AGENT_NAME = "LOG_AGENT";
+    public static final String FINISH = "FINISH";
+    public static final String TRANSPORT_MOVE = "TRANSPORT_MOVE";
+    public static final String STATUS = "STATUS";
+    public static final boolean STATUS_LOG_ENABLED = true;
 
    /* public static final int ACTION_FIND_DESTINATION = 16;
         public static final int ACTION_FOUND_DESTINATION = 2;

@@ -19,34 +19,35 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         //Application.launch(args);
-        Application.launch(MapScene.class,args);
+        Application.launch(MapScene.class, args);
 
     }
 
-    private void draw(GoogleMap map) throws InterruptedException {
-        System.out.println("Start drawing");
-        int delay = 10000;
-        while (true) {
-            map.startJumping();
-            wait(delay);
-            map.switchHybrid();
-            wait(delay);
-            map.switchRoadmap();
-            wait(delay);
-            map.switchSatellite();
-            wait(delay);
-            map.switchTerrain();
-            wait(delay);
-            map.stopJumping();
-            wait(delay);
-            map.setMapCenter(55.5, 55.5);
-            wait(delay);
-            map.setMarkerPosition(55.5, 55.5);
-            wait(delay);
+    /* private void draw(GoogleMap map) throws InterruptedException {
+         System.out.println("Start drawing");
+         int delay = 10000;
+         while (true) {
+             map.startJumping();
+             wait(delay);
+             map.switchHybrid();
+             wait(delay);
+             map.switchRoadmap();
+             wait(delay);
+             map.switchSatellite();
+             wait(delay);
+             map.switchTerrain();
+             wait(delay);
+             map.stopJumping();
+             wait(delay);
+             map.setMapCenter(55.5, 55.5);
+             wait(delay);
+             map.setMarkerPosition(55.5, 55.5);
+             wait(delay);
 
-        }
-    }
+         }
+     }      */
     public MapEvent prevMap;
+
     @Override
     public void start(Stage stage) throws Exception {
         StackPane root = new StackPane();
@@ -61,10 +62,10 @@ public class Main extends Application {
         map.setOnMapLatLngChanged(new EventHandler<MapEvent>() {
             @Override
             public void handle(MapEvent mapEvent) {
-                if (prevMap!= null){
-                map.addRoad(mapEvent.getLat(),mapEvent.getLng(),prevMap.getLat(),prevMap.getLng());
+                if (prevMap != null) {
+                    map.addRoad(mapEvent.getLat(), mapEvent.getLng(), prevMap.getLat(), prevMap.getLng());
                 }
-                prevMap= mapEvent;
+                prevMap = mapEvent;
             }
         });
         stage.setScene(new Scene(root));

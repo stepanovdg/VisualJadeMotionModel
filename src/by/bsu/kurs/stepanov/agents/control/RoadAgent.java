@@ -1,17 +1,18 @@
 package by.bsu.kurs.stepanov.agents.control;
 
-import by.bsu.kurs.stepanov.types.Constants;
-import by.bsu.kurs.stepanov.types.Price;
-import by.bsu.kurs.stepanov.types.PriceRuleObj;
-import by.bsu.kurs.stepanov.types.PurposeHandler;
+import by.bsu.kurs.stepanov.types.*;
+import by.bsu.kurs.stepanov.utils.ExceptionUtils;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
+import jade.util.leap.Serializable;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,9 +36,10 @@ public class RoadAgent extends Agent {
     }
 
     private LinkedHashMap<AID, Integer> waitForTimer;
+    private Set<AID> transportsInUse;
 
     /**
-     * if 0 it means that this road is bothsided
+     * if 0 it means that this road is both-sided
      * positive int means that this road leads from firstRoadEnd
      * to secondRoadEnd
      * negative int means that this road leads from secondRoadEnd
@@ -61,6 +63,7 @@ public class RoadAgent extends Agent {
         this.toFirstRoadEndStack = new AID[length + 1];
         this.toSecondRoadEndStack = new AID[length + 1];
         this.waitForTimer = new LinkedHashMap<>();
+        this.transportsInUse = new HashSet<>();
 
     }
 
@@ -72,6 +75,7 @@ public class RoadAgent extends Agent {
         this.toFirstRoadEndStack = new AID[length + 1];
         this.toSecondRoadEndStack = new AID[length + 1];
         this.waitForTimer = new LinkedHashMap<>();
+        this.transportsInUse = new HashSet<>();
     }
 
     /**
@@ -94,7 +98,7 @@ public class RoadAgent extends Agent {
     @Override
     protected void setup() {
         init(getArguments());
-        paintLog(Constants.READY);
+        paintLog(Constants.READY, new IntegerEnvelope(roadMotionMode));
         addBehaviour(new CyclicBehaviour(this) {
 
             public void action() {
@@ -104,7 +108,7 @@ public class RoadAgent extends Agent {
                     try {
                         reply = chooseAction(msg);
                     } catch (UnreadableException | IOException e) {
-                        e.printStackTrace();  //TODO.
+                        ExceptionUtils.handleException(e);
                     }
                     if (reply != null) {
                         send(reply); //отправляем сообщения
@@ -121,12 +125,13 @@ public class RoadAgent extends Agent {
 
         ACLMessage reply = null;
         PurposeHandler ph = (PurposeHandler) msg.getContentObject();
-        System.out.print(!ph.getPurpose().equals(Constants.ACTION_TIMER) ? "purpose= " + ph.getPurpose() + this.getAID() + "\n" : ".");
+//        System.out.print(!ph.getPurpose().equals(Constants.ACTION_TIMER) ? "purpose= " + ph.getPurpose() + this.getAID() + "\n" : ".");
         if (ph.getPurpose().equals(Constants.ACTION_START_MOTION)) {
-            System.out.println("Road recevi mess" + (AID) ph.getObj());
+//            System.out.println("Road recevi mess" + (AID) ph.getObj()[0]);
         }
         switch (ph.getPurpose()) {
             case Constants.ACTION_CALCULATE_DISTANCE: {
+                paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
                 // System.out.println(msg);
                 //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
                 AID from = msg.getSender();
@@ -140,9 +145,9 @@ public class RoadAgent extends Agent {
                         break;
                     }
                 }
-                PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) ph.getObj();
+                PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) ph.getObj()[0];
                 dist.setDistance(calculate(dist.getDistance()));
-                ACLMessage ask = new ACLMessage(7);
+                ACLMessage ask = new ACLMessage(Constants.MESSAGE);
 
 
                 AID to = chooseOtherRoadEnd(from);
@@ -155,6 +160,7 @@ public class RoadAgent extends Agent {
                 break;
             }
             case Constants.ACTION_FIND_DESTINATION: {
+                paintLog(Constants.STATUS, new StringEnvelope("DESTINATION"));
                /* System.out.println(msg);
                 AID from = msg.getSender();
                 AID to = chooseOtherRoadEnd(from);
@@ -169,9 +175,9 @@ public class RoadAgent extends Agent {
                 //  System.out.println(msg);
                 AID from = msg.getSender();
                 AID to = chooseOtherRoadEnd(from);
-                AID dest = (AID) ph.getObj();
+                AID dest = (AID) ph.getObj()[0];
                 if (to != null) {
-                    ACLMessage ask = new ACLMessage(7);
+                    ACLMessage ask = new ACLMessage(Constants.MESSAGE);
                     PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_FIND_DESTINATION, dest);
                     ask.setContentObject(ph1);
 
@@ -181,9 +187,10 @@ public class RoadAgent extends Agent {
                 break;
             }
             case Constants.ACTION_START_MOTION: {
-                System.out.println(msg);
+                paintLog(Constants.STATUS, new StringEnvelope("INUSE"));
+//                System.out.println(msg);
                 AID transport = msg.getSender();
-                AID from = (AID) ph.getObj();
+                AID from = (AID) ph.getObj()[0];
                 AID to = chooseOtherRoadEnd(from);
                 if (to != null) {
                     addToTransportStack(to, transport);
@@ -204,9 +211,11 @@ public class RoadAgent extends Agent {
             Integer stack = getWaitForTimer().get(transportAID);
             getWaitForTimer().remove(transportAID);
             if (stack == 1) {
+                paintLog(Constants.TRANSPORT_MOVE, transportAID, firstRoadEnd, new IntegerEnvelope(0));
                 toFirstRoadEndStack[length] = transportAID;
             }
             if (stack == 2) {
+                paintLog(Constants.TRANSPORT_MOVE, transportAID, secondRoadEnd, new IntegerEnvelope(0));
                 toSecondRoadEndStack[0] = transportAID;
             }
         }
@@ -225,21 +234,28 @@ public class RoadAgent extends Agent {
         for (int i = 0; i < length; i++) {
             if (toFirstRoadEndStack[i + 1] != null) {
                 toFirstRoadEndStack[i] = toFirstRoadEndStack[i + 1];
+                paintLog(Constants.TRANSPORT_MOVE, toFirstRoadEndStack[i], firstRoadEnd, new IntegerEnvelope(100 * i / length));
                 toFirstRoadEndStack[i + 1] = null;
             }
             if (toSecondRoadEndStack[length - i - 1] != null) {
                 toSecondRoadEndStack[length - i] = toSecondRoadEndStack[length - i - 1];
+                paintLog(Constants.TRANSPORT_MOVE, toSecondRoadEndStack[length - i], secondRoadEnd, new IntegerEnvelope(100 * (length - i) / length));
                 toSecondRoadEndStack[length - i - 1] = null;
             }
         }
     }
 
     private void sendStopMotion(AID transport, AID roadEnd) throws IOException {
-        ACLMessage msg = new ACLMessage(7);
+        ACLMessage msg = new ACLMessage(Constants.MESSAGE);
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_STOP_MOTION, roadEnd);
         msg.setContentObject(ph);
         msg.addReceiver(transport);
+        transportsInUse.remove(transport);
+        if (transportsInUse.isEmpty()) {
+            paintLog(Constants.STATUS, new StringEnvelope("READY"));
+        }
         send(msg);
+        //paintLog(Constants.TRANSPORT_MOVE, transport, roadEnd, new IntegerEnvelope(100));
     }
 
     private void addToTransportStack(AID destinationRoadEnd, AID transport) {
@@ -248,7 +264,8 @@ public class RoadAgent extends Agent {
             System.out.println("RoadEndNotFound");
             return;
         }
-        System.out.println("Added transport " + transport + "going to " + destinationRoadEnd);
+//        System.out.println("Added transport " + transport + "going to " + destinationRoadEnd);
+        transportsInUse.add(transport);
         getWaitForTimer().put(transport, to);
     }
 
@@ -270,9 +287,21 @@ public class RoadAgent extends Agent {
     }
 
     private void paintLog(String event) {
-        ACLMessage msg = new ACLMessage(7);
-        msg.addReceiver(new AID("Minsk", AID.ISLOCALNAME));
-        msg.setContent(event);
+        paintLog(event, new Serializable[0]);
+    }
+
+    private void paintLog(String event, jade.util.leap.Serializable... args) {
+        if (event.equals(Constants.STATUS) && !Constants.STATUS_LOG_ENABLED) {
+            return;
+        }
+        ACLMessage msg = new ACLMessage(Constants.MESSAGE);
+        msg.addReceiver(new AID(Constants.LOG_AGENT_NAME, AID.ISLOCALNAME));
+        PurposeHandler ph = new PurposeHandler(event, args);
+        try {
+            msg.setContentObject(ph);
+        } catch (IOException e) {
+            ExceptionUtils.handleException(e);
+        }
         send(msg);
     }
 }

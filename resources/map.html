@@ -22,14 +22,19 @@
     </script>
     <script type="text/javascript">
         var map;
+        var centerLat;
+        var centerLon;
         var marker;
+        var zoom;
 
         function get_click_position(event) {
             var location = event.latLng;
             var lat = location.lat();
             var lng = location.lng();
-            setMarkerPosition(lat, lng);
-            app.handle(lat, lng);
+            //setMarkerPosition(lat, lng);
+            //app.handle(lat, lng);
+            getMapBorders();
+            getMapCenter();
         }
 
         function setMarkerPosition(lat, lng) {
@@ -46,17 +51,17 @@
             });
         }
 
-        function addRoad(lat, lng,lat1, lng1) {
+        function addRoad(lat, lng, lat1, lng1) {
             var latLng = new google.maps.LatLng(lat, lng);
             var latLng1 = new google.maps.LatLng(lat1, lng1);
             var myCoordinates = [
-            latLng,latLng1
+                latLng, latLng1
             ];
             var polyOptions = {
-            path: myCoordinates,
-            strokeColor: "#FF0000",
-            strokeOpacity: 1,
-            strokeWeight: 3
+                path: myCoordinates,
+                strokeColor: "#FF0000",
+                strokeOpacity: 1,
+                strokeWeight: 3
             }
             var it = new google.maps.Polyline(polyOptions);
             it.setMap(map);
@@ -72,7 +77,56 @@
 
         function setMapCenter(lat, lng) {
             var latlng = new google.maps.LatLng(lat, lng);
-            map.setCenter(latlng);
+            centerLat = lat;
+            centerLon = lng;
+
+            getMapCenter();
+        }
+
+        function getMapCenter() {
+            //return map.getCenter();
+            //return center;
+            //app.handle(center);
+            if (typeof app === "undefined") {
+                alert("app is undefined");
+            }
+            if (typeof centerLat === "undefined") {
+                alert("centerLat is undefined");
+            }
+
+            app.callback(centerLat, centerLon, zoom);
+        }
+
+        function getMapBorders() {
+            if (typeof map === "undefined") {
+                alert("map is undefined");
+            }
+            var latMax = map.getBounds().getNorthEast().lat();
+            var lngMax = map.getBounds().getNorthEast().lng();
+            var latMin = map.getBounds().getSouthWest().lat();
+            var lngMin = map.getBounds().getSouthWest().lng();
+            alert(latMax);
+            alert(latMin);
+            alert(lngMax);
+            alert(lngMin);
+
+            app.callback(latMax, latMin, lngMax, lngMin);
+        }
+
+        function setZoom(zoomLevel) {
+            zoom = zoomLevel;
+            var mapOptions = {
+                zoom: zoom
+            };
+            map.setOptions(mapOptions);
+
+            app.callback(centerLat, centerLon, zoom);
+        }
+
+        function getZoom() {
+            //return map.getCenter();
+            //return zoom;
+            //app.handle(zoom);
         }
 
         function switchSatellite() {
@@ -108,10 +162,13 @@
         }
 
         function initialize() {
-            var defLatLng = new google.maps.LatLng(54.92082843149136, 23.829345703125);
+            centerLat = 54.92082843149136;
+            centerLon = 23.829345703125;
+            zoom = 7.0;
+            var defLatLng = new google.maps.LatLng(centerLat, centerLon);
             var mapOptions = {
                 center: defLatLng,
-                zoom: 7,
+                zoom: zoom,
                 mapTypeId: google.maps.MapTypeId.ROADMAP,
                 disableDefaultUI: true,
                 panControl: false
@@ -119,13 +176,14 @@
             map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
             google.maps.event.addListener(map, 'click', get_click_position);
 
-            marker = new google.maps.Marker({
-                position: defLatLng,
-                map: map,
-                icon: "red-dot.png"
-            });
+            /*marker = new google.maps.Marker({
+             position: defLatLng,
+             map: map,
+             icon: "red-dot.png"
+             }); */
 
-            app.handle(0, 0);
+
+            //app.handle(true);
         }
 
         function setDarkMarkerIcon() {

@@ -1,4 +1,4 @@
-package by.bsu.kurs.stepanov.visualisation;
+package chernovick;
 
 import by.bsu.kurs.stepanov.types.Coordinates;
 import jade.core.AID;
@@ -17,7 +17,7 @@ public class Scene extends JFrame implements Map {
 
     // Variables declaration - do not modify
     private javax.swing.JPanel jPanel2;
-    private HashMap<AID,Coordinates> trajectories = new HashMap<>();
+    private HashMap<AID, Coordinates> trajectories = new HashMap<>();
     // End of variables declaration
 
     public Scene() {
@@ -32,8 +32,8 @@ public class Scene extends JFrame implements Map {
     }// </editor-fold>
 
     public void drawStep(Coordinates oldCoord, Coordinates newCoord) {
-        jPanel2.getGraphics().drawLine(oldCoord.getLongitude().intValue(),oldCoord.getLatitude().intValue(),
-                newCoord.getLongitude().intValue(),newCoord.getLatitude().intValue());
+        jPanel2.getGraphics().drawLine(oldCoord.getLongitude().intValue(), oldCoord.getLatitude().intValue(),
+                newCoord.getLongitude().intValue(), newCoord.getLatitude().intValue());
     }
 
     //set ui visible//

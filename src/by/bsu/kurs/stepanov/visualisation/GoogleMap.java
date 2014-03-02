@@ -33,7 +33,7 @@ public class GoogleMap extends Parent {
         initMap();
         initCommunication();
         getChildren().add(webView);
-        setMarkerPosition(0, 0);
+        //setMarkerPosition(0, 0);
         setMapCenter(0, 0);
         switchTerrain();
     }

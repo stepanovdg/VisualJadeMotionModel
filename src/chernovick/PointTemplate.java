@@ -1,10 +1,6 @@
-package by.bsu.kurs.stepanov.agents.control;
+package chernovick;
 
 import by.bsu.kurs.stepanov.types.Constants;
-import by.bsu.kurs.stepanov.types.Step;
-import by.bsu.kurs.stepanov.types.Trajectory;
-import by.bsu.kurs.stepanov.types.TrajectoryFactory;
-import by.bsu.kurs.stepanov.visualisation.Scene;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -22,7 +18,7 @@ import java.util.HashMap;
 public class PointTemplate extends Agent {
 
     private long pollingTime = Constants.POLLING_TIME;
-    private HashMap<AID,Trajectory> traffics = new HashMap<>();
+    private HashMap<AID, Trajectory> traffics = new HashMap<>();
     private Scene globalMap = new Scene();
 
     public PointTemplate() {
@@ -54,13 +50,13 @@ public class PointTemplate extends Agent {
 
     }
 
-    private void checkSender(ACLMessage msg){
+    private void checkSender(ACLMessage msg) {
         AID sender = msg.getSender();
-        if(traffics.containsKey(sender)){
-           refreshTrack(msg);
-        }  else{
-           Trajectory traj = TrajectoryFactory.getTrajectory(msg);
-           traffics.put(sender,traj);
+        if (traffics.containsKey(sender)) {
+            refreshTrack(msg);
+        } else {
+            Trajectory traj = TrajectoryFactory.getTrajectory(msg);
+            traffics.put(sender, traj);
         }
     }
 
@@ -69,6 +65,6 @@ public class PointTemplate extends Agent {
         Trajectory traj = traffics.get(sender);
         Step step = TrajectoryFactory.getStep(msg);
         traj.addStep(step);
-       traffics.put(sender,traj);
+        traffics.put(sender, traj);
     }
 }

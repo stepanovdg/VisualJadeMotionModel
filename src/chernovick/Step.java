@@ -1,4 +1,6 @@
-package by.bsu.kurs.stepanov.types;
+package chernovick;
+
+import by.bsu.kurs.stepanov.types.Coordinates;
 
 /**
  * Created by IntelliJ IDEA.

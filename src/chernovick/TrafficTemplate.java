@@ -1,4 +1,4 @@
-package by.bsu.kurs.stepanov.agents.movable;
+package chernovick;
 
 
 import by.bsu.kurs.stepanov.types.Coordinates;

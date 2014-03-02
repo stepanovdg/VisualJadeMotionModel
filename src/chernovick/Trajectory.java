@@ -1,4 +1,6 @@
-package by.bsu.kurs.stepanov.types;
+package chernovick;
+
+import by.bsu.kurs.stepanov.types.Coordinates;
 
 import java.util.ArrayList;
 
@@ -14,18 +16,18 @@ public class Trajectory extends Step {
     private ArrayList<Step> steps = new ArrayList<>();
 
     public Trajectory(Coordinates from, Coordinates where) {
-        super(from,where);
+        super(from, where);
     }
 
-    public void addStep(Step coord){
+    public void addStep(Step coord) {
         steps.add(coord);
     }
 
     public ArrayList<Step> getSteps() {
-            return steps;
+        return steps;
     }
 
-    public boolean isUknownRoute(){
+    public boolean isUknownRoute() {
         return steps.isEmpty();
     }
 }

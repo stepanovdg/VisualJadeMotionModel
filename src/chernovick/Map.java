@@ -1,4 +1,4 @@
-package by.bsu.kurs.stepanov.visualisation;
+package chernovick;
 
 import jade.core.AID;
 
@@ -11,12 +11,11 @@ import jade.core.AID;
  */
 public interface Map {
 
-   public  void refresh();
+    public void refresh();
 
     public void showLegends();
 
     public void filter(AID... aidsToSafe);
-
 
 
 }

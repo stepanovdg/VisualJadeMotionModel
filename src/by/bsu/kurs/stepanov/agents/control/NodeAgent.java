@@ -1,14 +1,13 @@
 package by.bsu.kurs.stepanov.agents.control;
 
-import by.bsu.kurs.stepanov.types.Constants;
-import by.bsu.kurs.stepanov.types.Price;
-import by.bsu.kurs.stepanov.types.PriceRuleObj;
-import by.bsu.kurs.stepanov.types.PurposeHandler;
+import by.bsu.kurs.stepanov.types.*;
+import by.bsu.kurs.stepanov.utils.ExceptionUtils;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
+import jade.util.leap.Serializable;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -69,7 +68,7 @@ public class NodeAgent extends Agent {
     @Override
     protected void setup() {
         init(getArguments());
-        paintLog(Constants.READY);
+        paintLog(Constants.STATUS, new StringEnvelope("READY"));
 
         addBehaviour(new CyclicBehaviour(this) {
 
@@ -79,7 +78,6 @@ public class NodeAgent extends Agent {
                     ACLMessage reply = null;
                     try {
                         if (msg.getSender().getLocalName().equals("ams")) {
-                            //paintLog(msg);
                             //reply = chooseAction(previousMessage);
                         } else {
                             reply = chooseAction(msg);
@@ -88,7 +86,7 @@ public class NodeAgent extends Agent {
                         }
 
                     } catch (UnreadableException | IOException e) {
-                        e.printStackTrace();  //TODO.
+                        ExceptionUtils.handleException(e);
                     }
                     if (reply != null) {
                         send(reply); //отправляем сообщения
@@ -102,19 +100,19 @@ public class NodeAgent extends Agent {
     }
 
     private ACLMessage chooseAction(ACLMessage msg) throws UnreadableException, IOException {
-        // System.out.println(msg);
         ACLMessage reply = null;
         PurposeHandler ph = (PurposeHandler) msg.getContentObject();
         paintLog(ph.getPurpose());
         switch (ph.getPurpose()) {
             case Constants.ACTION_FIND_DESTINATION: {
                 //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
-                AID dest = (AID) ph.getObj();
+                AID dest = (AID) ph.getObj()[0];
                 if (dest.equals(getAID())) {
                     // Found destination ask previous to calculate distance
                     reply = msg.createReply();
-                    reply.setPerformative(7);
+                    reply.setPerformative(Constants.MESSAGE);
                     PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, new PriceRuleObj<AID, Price>(dest, new Price()));
+                    paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
                     reply.setContentObject(ph1);
 
                 } else {
@@ -124,10 +122,11 @@ public class NodeAgent extends Agent {
 
                         } else {
                             reply = msg.createReply();
-                            reply.setPerformative(7);
+                            reply.setPerformative(Constants.MESSAGE);
                             //reply.setContent(Constants.ACTION_CALCULATE_DISTANCE);
                             dist.setAddress(dest);
                             PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist);
+                            paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
                             reply.setContentObject(ph1);
                         }
                     } else {
@@ -139,7 +138,7 @@ public class NodeAgent extends Agent {
             }
             case Constants.ACTION_CALCULATED_DISTANCE: {
                 //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
-                PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) ph.getObj();
+                PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) ph.getObj()[0];
                 AID dest = dist.getAddress();
                 if (distanceTable.containsKey(dest)) {
                     PriceRuleObj<AID, Price> previousBestDist = distanceTable.get(dest);
@@ -164,30 +163,34 @@ public class NodeAgent extends Agent {
             }
             case Constants.ACTION_ASK_FOR_ROAD_AID: {
                 //  System.out.println("asked for road aid at" + getName() + " aid" + getAID());
-                AID dest = (AID) ph.getObj();
+                AID dest = (AID) ph.getObj()[0];
                 // System.out.println("get dest" + dest + " aid" + getAID());
                 if (dest.equals(getAID())) {
                     reply = msg.createReply();
-                    reply.setPerformative(7);
+                    reply.setPerformative(Constants.MESSAGE);
                     PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_DESTINATED);
+                    paintLog(Constants.STATUS, new StringEnvelope("FOUND_DESTINATION"));
                     reply.setContentObject(ph1);
                 } else {
                     if (distanceTable.containsKey(dest)) {
                         PriceRuleObj<AID, Price> dist = distanceTable.get(dest);
                         if (dist.isEmpty()) {
                             //in this case it should never used
-                            System.out.println("Unpermitable metjhod");
+                            System.out.println("Broken method");
+                            paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
                             askForDistance(dest); // check
                         } else {
                             reply = msg.createReply();
-                            reply.setPerformative(7);
+                            reply.setPerformative(Constants.MESSAGE);
                             reply.setContent(Constants.ACTION_FOUND_DESTINATION);
                             PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_FOUND_DESTINATION, dist.getAddress());
+                            paintLog(Constants.STATUS, new StringEnvelope("FOUND_DESTINATION"));
                             reply.setContentObject(ph1);
                         }
                     } else {
                         distanceTable.put(dest, new PriceRuleObj<AID, Price>());
                         carSet.put(msg.getSender(),dest);
+                        paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
                         askForDistance(dest);
                     }
                 }
@@ -203,8 +206,9 @@ public class NodeAgent extends Agent {
     }
 
     private void permitMotion(AID destination) throws IOException {
-        ACLMessage msg = new ACLMessage(7);
+        ACLMessage msg = new ACLMessage(Constants.MESSAGE);
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_FOUND_DESTINATION, distanceTable.get(destination).getAddress());
+        paintLog(Constants.STATUS, new StringEnvelope("FOUND_DESTINATION"));
         msg.setContentObject(ph);
         for (AID car : carSet.keySet()) {
             AID dest = carSet.get(car);
@@ -216,10 +220,10 @@ public class NodeAgent extends Agent {
     }
 
     private void askToCalculate(AID destination, PriceRuleObj<AID, Price> dist) throws IOException {
-        ACLMessage msg = new ACLMessage(7);
-        //msg.setContent(Constants.ACTION_CALCULATE_DISTANCE);
+        ACLMessage msg = new ACLMessage(Constants.MESSAGE);
         PriceRuleObj<AID, Price> dist1 = new PriceRuleObj<>(destination, dist.getDistance());
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist1);
+        paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
         msg.setContentObject(ph);
         for (AID road : roadSet) {
             if (!road.equals(dist.getAddress())) {
@@ -231,21 +235,31 @@ public class NodeAgent extends Agent {
 
     private void askForDistance(AID dest) throws IOException {
         for (AID road : roadSet) {
-            ACLMessage msg = new ACLMessage(7);
-
-            // System.out.println("To road " + road);
+            ACLMessage msg = new ACLMessage(Constants.MESSAGE);
             PurposeHandler ph = new PurposeHandler(Constants.ACTION_FIND_DESTINATION, dest);
+            paintLog(Constants.STATUS, new StringEnvelope("DESTINATION"));
             msg.setContentObject(ph);
             msg.addReceiver(road);
-            // System.out.println("To road  objects set" + road);
             send(msg);
         }
     }
 
-    private void paintLog(String event){
-        ACLMessage msg = new ACLMessage(7);
-        msg.addReceiver(new AID("Minsk",AID.ISLOCALNAME));
-        msg.setContent(event);
+    private void paintLog(String event) {
+        paintLog(event, new Serializable[0]);
+    }
+
+    private void paintLog(String event, jade.util.leap.Serializable... args) {
+        if (event.equals(Constants.STATUS) && !Constants.STATUS_LOG_ENABLED) {
+            return;
+        }
+        ACLMessage msg = new ACLMessage(Constants.MESSAGE);
+        msg.addReceiver(new AID(Constants.LOG_AGENT_NAME, AID.ISLOCALNAME));
+        PurposeHandler ph = new PurposeHandler(event, args);
+        try {
+            msg.setContentObject(ph);
+        } catch (IOException e) {
+            ExceptionUtils.handleException(e);
+        }
         send(msg);
     }
 }

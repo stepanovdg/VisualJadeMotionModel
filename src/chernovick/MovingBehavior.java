@@ -1,4 +1,4 @@
-package by.bsu.kurs.stepanov.agents.movable;
+package chernovick;
 
 
 import by.bsu.kurs.stepanov.types.Coordinates;
@@ -67,10 +67,9 @@ public class MovingBehavior extends CyclicBehaviour {
      */
     @Override
     public void action() {
-        int targ = (int)(Math.random()*8);
-        int distance = (int)(Math.random()*1000);
-        int speed = (int)(Math.random()*distance/10);
-
+        int targ = (int) (Math.random() * 8);
+        int distance = (int) (Math.random() * 1000);
+        int speed = (int) (Math.random() * distance / 10);
 
 
     }

@@ -41,15 +41,43 @@ public class Coordinates {
         this.longitude = Double.valueOf(arg[1]);
     }
 
-    public static Double countLength(Coordinates a,Coordinates b) {
-        double dy = a.getLatitude()-b.getLatitude();
-        double dx = a.getLongitude()-b.getLongitude();
-        if (dx>180){
+    public static Double countLength(Coordinates a, Coordinates b) {
+        double dy = a.getLatitude() - b.getLatitude();
+        double dx = a.getLongitude() - b.getLongitude();
+        if (dx > 180) {
             dx = 360 - dx;
         }
-        if(dx<-180){
+        if (dx < -180) {
             dx = 360 + dx;
         }
-        return  Math.sqrt(dx*dx+dy*dy);
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    @Override
+    public String toString() {
+        return "Coordinates{" +
+                "latitude=" + latitude +
+                ", longitude=" + longitude +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Coordinates)) return false;
+
+        Coordinates that = (Coordinates) o;
+
+        if (!latitude.equals(that.latitude)) return false;
+        if (!longitude.equals(that.longitude)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = latitude.hashCode();
+        result = 31 * result + longitude.hashCode();
+        return result;
     }
 }

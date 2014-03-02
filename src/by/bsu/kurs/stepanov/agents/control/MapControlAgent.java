@@ -1,14 +1,13 @@
 package by.bsu.kurs.stepanov.agents.control;
 
-import by.bsu.kurs.stepanov.types.Constants;
-import by.bsu.kurs.stepanov.types.Coordinates;
-import by.bsu.kurs.stepanov.types.PurposeHandler;
-import by.bsu.kurs.stepanov.visualisation.MapFX;
-import by.bsu.kurs.stepanov.visualisation.Runner;
+import by.bsu.kurs.stepanov.types.*;
+import by.bsu.kurs.stepanov.visualisation.control.MapFX;
+import by.bsu.kurs.stepanov.visualisation.application.Runner;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.UnreadableException;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,6 +35,7 @@ public class MapControlAgent extends Agent {
     private List<String> roadAgents;
     private AgentController agc1;
     private MapFX map;
+    private List<String> transportAgents;
 
 
     /**
@@ -75,7 +76,11 @@ public class MapControlAgent extends Agent {
                     if (msg.getSender().getLocalName().equals("ams")) {
                         System.out.println(msg);
                     } else {
-                        reply = chooseAction(msg);
+                        try {
+                            reply = chooseAction(msg);
+                        } catch (UnreadableException e) {
+                            e.printStackTrace(); // todo
+                        }
                     }
                     if (reply != null) {
                         send(reply); //отправляем сообщения
@@ -88,15 +93,21 @@ public class MapControlAgent extends Agent {
         });
     }
 
-    private ACLMessage chooseAction(ACLMessage msg) {
+    private ACLMessage chooseAction(ACLMessage msg) throws UnreadableException {
         AID sender = msg.getSender();
         String name = sender.getLocalName();
-        String event = msg.getContent();
+        PurposeHandler ph = (PurposeHandler) msg.getContentObject();
+        String event = ph.getPurpose();
         if (nodeAgents.containsKey(sender)) {
             Coordinates coordinates = nodeAgents.get(sender);
             switch (event) {
-                case Constants.READY: {
-                    map.setNodeMarker(coordinates.getLatitude(), coordinates.getLongitude());
+                /*case Constants.READY: {
+                    map.addNodeMarker(name, coordinates, "READY");
+                    break;
+                } */
+                case Constants.STATUS: {
+                    StringEnvelope env = (StringEnvelope) ph.getObj()[0];
+                    map.addNodeMarker(name, coordinates, env.getString());
                     break;
                 }
                 default: {
@@ -105,19 +116,63 @@ public class MapControlAgent extends Agent {
             }
         } else if (roadAgents.contains(name)) {
             String[] coordinates = name.split(Constants.AID_NAME_GUID_SPLITTER);
-            Coordinates from = nodeAgents.get(new AID(coordinates[0],ISGUUID));
-            Coordinates to = nodeAgents.get(new AID(coordinates[1],ISGUUID));
+            Coordinates from = nodeAgents.get(new AID(coordinates[0], ISGUUID));
+            Coordinates to = nodeAgents.get(new AID(coordinates[1], ISGUUID));
             switch (event) {
                 case Constants.READY: {
-                    map.setRoad(from, to);
+                    IntegerEnvelope mode = (IntegerEnvelope) ph.getObj()[0];
+                    map.addRoadMarker(name, from, to, mode.percent, "READY");
+                    break;
+                }
+                case Constants.TRANSPORT_MOVE: {
+                    AID transport = (AID) ph.getObj()[0];
+                    AID destination = (AID) ph.getObj()[1];
+                    IntegerEnvelope integerEnvelope = (IntegerEnvelope) ph.getObj()[2];
+                    Coordinates dest = nodeAgents.get(destination);
+                    map.moveTransportMarker(transport.getLocalName(), dest, integerEnvelope.percent);
+                    break;
+                }
+                case Constants.STATUS: {
+                    StringEnvelope env = (StringEnvelope) ph.getObj()[0];
+                    map.addRoadMarker(name, null, null, 0, env.getString());
+                    break;
+                }
+                default: {
+                    System.err.println(event);
+                    break;
+                }
+            }
+        } else {
+            switch (event) {
+                case Constants.READY: {  //todo add check for outofbounds and etc
+                    AID situated = (AID) ph.getObj()[0];
+                    AID destination = (AID) ph.getObj()[1];
+                    Coordinates sit = nodeAgents.get(situated);
+                    Coordinates dest = nodeAgents.get(destination);
+                    map.addTransportMarker(name, sit, dest, "READY");
+                    break;
+                }
+                case Constants.START: {
+                    AID situated = (AID) ph.getObj()[0];
+                    Coordinates sit = nodeAgents.get(situated);
+                    map.moveTransportMarker(name, sit, 0);
+                    break;
+                }
+                case Constants.FINISH: {
+                    AID situated = (AID) ph.getObj()[0];
+                    Coordinates dest = nodeAgents.get(situated);
+                    map.moveTransportMarker(name, dest, 100);
+                    break;
+                }
+                case Constants.STATUS: {
+                    StringEnvelope env = (StringEnvelope) ph.getObj()[0];
+                    map.addTransportMarker(name, null, null, env.getString());
                     break;
                 }
                 default: {
                     break;
                 }
             }
-        } else {
-            //transport
         }
         return null;
     }
@@ -127,27 +182,49 @@ public class MapControlAgent extends Agent {
             return;
         }
         map = (MapFX) arguments[0];
+    }
 
+    private void initRoads(Object[] arguments) {
+        if (arguments.length <= 0 || !(arguments[1] instanceof List)) {
+            return;
+        }
+        roadAgents = (List<String>) arguments[1];
+    }
+
+    private void initNodes(Object[] arguments) {
+        if (arguments.length <= 0 || !(arguments[2] instanceof Map)) {
+            return;
+        }
+        nodeAgents = (HashMap<AID, Coordinates>) arguments[0];
+    }
+
+    private void initTransport(Object[] arguments) {
+        if (arguments.length <= 0 || !(arguments[3] instanceof List)) {
+            return;
+        }
+        transportAgents = (List<String>) arguments[0];
     }
 
     private void init(Object[] arguments) {
         nodeAgents = new HashMap<>();
         roadAgents = new ArrayList<>();
+        transportAgents = new ArrayList<>();
         AgentContainer mainContainer = getContainerController();
         try {
-            doWait(20000);
+            doWait(10000);
             generateNodes(mainContainer);
             generateRoads(mainContainer);
             generateTransport(mainContainer);
             agc1.start();
-            ACLMessage msg = new ACLMessage(7);
+            ACLMessage msg = new ACLMessage(Constants.MESSAGE);
             PurposeHandler ph = new PurposeHandler(Constants.START);
             msg.setContentObject(ph);
             msg.addReceiver(new AID("CAR1" + JADE_PREFIX, ISGUUID));
             msg.addReceiver(new AID("CAR2" + JADE_PREFIX, ISGUUID));
-            doWait(50000);
+//            doWait(50000);
+            doWait(10000);
             send(msg);
-            System.out.println("Cars start to move");
+//            System.out.println("Cars start to move");
         } catch (StaleProxyException | IOException e) {
             e.printStackTrace();
         }
@@ -159,8 +236,13 @@ public class MapControlAgent extends Agent {
         createCar("CAR2", mainContainer, new AID("N0" + JADE_PREFIX, ISGUUID), new AID("N5" + JADE_PREFIX, ISGUUID));
     }
 
-    private void createCar(String car1, AgentContainer mainContainer, AID n0, AID n4) throws StaleProxyException {
-        AgentController agc = Runner.createTransportAgent(car1, mainContainer, new Object[]{n0, n4});
+    private void createCar(String name, AgentContainer mainContainer, AID situated, AID destination) throws StaleProxyException {
+        AgentController agc = Runner.createTransportAgent(name, mainContainer, new Object[]{situated, destination});
+        Coordinates from = nodeAgents.get(situated);
+        Coordinates to = nodeAgents.get(destination);
+        if (map != null) {
+            map.addTransportMarker(name, from, to, "UI");
+        }
         agc.start();
     }
 
@@ -176,9 +258,16 @@ public class MapControlAgent extends Agent {
 
     }
 
-    private void createRoad(String non1, AgentContainer mainContainer, int i, AID n0, AID n1, int i1) throws StaleProxyException {
-        AgentController agc = Runner.createRoadAgent(non1, mainContainer, new Object[]{i, n0, n1, i1});
+    private void createRoad(String name, AgentContainer mainContainer, int i, AID n0, AID n1, int roadMode) throws StaleProxyException {
+        AgentController agc = Runner.createRoadAgent(name, mainContainer, new Object[]{i, n0, n1, roadMode});
+        roadAgents.add(name);
+        Coordinates from = nodeAgents.get(n0);
+        Coordinates to = nodeAgents.get(n1);
         agc.start();
+        if (map != null) {
+            map.addRoadMarker(name, from, to, roadMode, "UI");
+        }
+
     }
 
     private void generateNodes(AgentContainer mainContainer) throws StaleProxyException {
@@ -205,7 +294,12 @@ public class MapControlAgent extends Agent {
 
     private void createNode(String name, AgentContainer mainContainer, Double lat, Double lng, Object[] roads) throws StaleProxyException {
         AgentController agc = Runner.createNodeAgent(name, mainContainer, roads);
-        nodeAgents.put(new AID(name, ISGUUID), new Coordinates(lat, lng));
+        AID nameA = new AID(name, ISGUUID);
+        Coordinates coordinates = new Coordinates(lat, lng);
+        nodeAgents.put(nameA, coordinates);
         agc.start();
+        if (map != null) {
+            map.addNodeMarker(nameA.getLocalName(), coordinates, "UI");
+        }
     }
 }

@@ -1,5 +1,8 @@
-package by.bsu.kurs.stepanov.visualisation;
+package by.bsu.kurs.stepanov.visualisation.application;
 
+import by.bsu.kurs.stepanov.types.Constants;
+import by.bsu.kurs.stepanov.utils.ExceptionUtils;
+import by.bsu.kurs.stepanov.visualisation.control.MapFX;
 import jade.BootProfileImpl;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
@@ -9,8 +12,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -26,27 +27,41 @@ public class Runner {
     private Properties properties = System.getProperties();
     private String CLASS_PATH = "C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\alt-rt.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\charsets.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\deploy.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\javaws.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\jce.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\jsse.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\management-agent.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\plugin.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\resources.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\rt.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\ext\\dnsns.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\ext\\localedata.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\ext\\sunec.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\ext\\sunjce_provider.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\ext\\sunmscapi.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\ext\\sunpkcs11.jar;C:\\Program Files\\Java\\jdk1.7.0\\jre\\lib\\ext\\zipfs.jar;C:\\Users\\Dmitriy\\Documents\\Java\\Intelig.Idea\\VisualJade\\out\\production\\VisualJade;C:\\Users\\Dmitriy\\Documents\\Java\\Курсовая\\JADE-bin-4.2.0\\jade\\lib\\commons-codec\\commons-codec-1.3.jar;C:\\Users\\Dmitriy\\Documents\\Java\\Курсовая\\JADE-bin-4.2.0\\jade\\lib\\jade.jar;C:\\Program Files\\Oracle\\JavaFX 2.2 SDK\\lib\\ant-javafx.jar;C:\\Program Files\\Oracle\\JavaFX 2.2 SDK\\lib\\javafx-doclet.jar;C:\\Program Files\\Oracle\\JavaFX 2.2 SDK\\lib\\javafx-mx.jar;C:\\Program Files\\Oracle\\JavaFX 2.2 SDK\\rt\\lib\\jfxrt.jar;C:\\Program Files\\Oracle\\JavaFX 2.2 SDK\\rt\\bin;C:\\Program Files\\Oracle\\JavaFX 2.2 SDK\\bin;C:\\Program Files\\Oracle\\JavaFX 2.2 Runtime;C:\\Program Files\\JetBrains\\IntelliJ IDEA 12.0\\lib\\idea_rt.jar";
 
+    public AgentContainer getMainContainer() {
+        return mainContainer;
+    }
+
+    private AgentContainer mainContainer;
+    private jade.core.Runtime runtime;
+
     public static void main(String[] args) {
         // new Runner().launch(args);
         new Runner().run(null);
     }
 
-    public void run(MapFX mapFX) {
-        jade.core.Runtime runtime = jade.core.Runtime.instance();
+    public Runner() {
+        runtime = jade.core.Runtime.instance();
         BootProfileImpl bootProfile = new BootProfileImpl();
-        bootProfile.setParameter("-accept-foreign-agents","true");
-        bootProfile.setParameter("-platform-id","note");
-        bootProfile.setParameter("-host","note");
-        AgentContainer cont = runtime.createMainContainer(new BootProfileImpl());
+        bootProfile.setParameter("-accept-foreign-agents", "true");
+        bootProfile.setParameter("-platform-id", "note");
+        bootProfile.setParameter("-host", "note");
+        mainContainer = runtime.createMainContainer(new BootProfileImpl());
         runtime.setCloseVM(true);
+    }
+
+    public void stop() {
+        runtime.shutDown();
+    }
+
+    public void run(MapFX mapFX) {
         try {
-            //runtime.startUp(new BootProfileImpl());
-            AgentController agentController1 = createMapAgent("Minsk",cont,new Object[]{mapFX});
-            agentController1.start();
+            AgentController agentController = createMapAgent(Constants.LOG_AGENT_NAME, mainContainer, new Object[]{mapFX});
+            agentController.start();
+            //For debug also creating rma
             //agentController1 = cont.createNewAgent("RMA","jade.tools.rma.rma",null);
             //agentController1.start();
         } catch (StaleProxyException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            ExceptionUtils.handleException(e);
         }
     }
 
@@ -86,11 +101,11 @@ public class Runner {
         return cont.createNewAgent(name, "by.bsu.kurs.stepanov.agents.control.AtomicMotionAgent", args);
     }
 
-    public static AgentController createMapAgent(String name, AgentContainer cont, Object[] args) throws StaleProxyException {
+    public AgentController createMapAgent(String name, AgentContainer cont, Object[] args) throws StaleProxyException {
         return cont.createNewAgent(name, "by.bsu.kurs.stepanov.agents.control.MapControlAgent", args);
     }
 
-    private void launch(String[] arguments) {
+    /*private void launch(String[] arguments) {
         List<String> args = new ArrayList<>();
         args.add("java");
         args.add("-cp");
@@ -100,8 +115,8 @@ public class Runner {
         args.add("true");
         args.add("-gui");
         args.add("jade.Boot");
-        args.add("agentA:by.bsu.kurs.stepanov.agents.movable.TrafficTemplate");
-        args.add("agentB:by.bsu.kurs.stepanov.agents.control.PointTemplate");
+        args.add("agentA:chernovick.TrafficTemplate");
+        args.add("agentB:chernovick.PointTemplate");
         ProcessBuilder pb = new ProcessBuilder(args);
         // Print out the command being executed
         String inputCommand = "";
@@ -125,7 +140,7 @@ public class Runner {
             e.printStackTrace();
         }
 
-    }
+    } */
 
     private void setEnvironmentVariable(Map<String, String> env, String name, String value) {
         env.put(name, value);

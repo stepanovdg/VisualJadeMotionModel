@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="by.bsu.kurs.stepanov.visualisation.control.Controller">
+    <stylesheets>
+        <URL value="@main.css"/>
+    </stylesheets>
+    <children>
+        <BorderPane prefHeight="577.0" prefWidth="768.0">
+            <center>
+                <Group fx:id="webViewGroup" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+                    <children>
+                        <WebView fx:id="webView" minHeight="-Infinity" minWidth="-Infinity" prefHeight="520.0"
+                                 prefWidth="600.0"/>
+                        <Group fx:id="nodes"/>
+                        <Group fx:id="roads"/>
+                        <Group fx:id="transports"/>
+                    </children>
+                </Group>
+            </center>
+            <left>
+                <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER"/>
+            </left>
+            <top>
+                <ToolBar prefWidth="200.0" xmlns:fx="http://javafx.com/fxml">
+                    <items>
+                        <Button fx:id="loadMapButton" mnemonicParsing="false" onAction="#loadMapAction" text="LoadMap"/>
+                        <Button fx:id="initAgentsButton" mnemonicParsing="false" onAction="#initAgents"
+                                text="Init Agents"/>
+                        <Button fx:id="start" disable="true" mnemonicParsing="false" onAction="#start"
+                                text="Start moving"/>
+                        <Button fx:id="stopAgents" mnemonicParsing="false" onAction="#stopAgents" prefHeight="25.0"
+                                prefWidth="58.0" text="Stop"/>
+                    </items>
+                </ToolBar>
+            </top>
+            <bottom>
+                <HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+                    <children>
+                        <ProgressBar layoutX="-6.0" layoutY="373.0" prefWidth="200.0" progress="0.0"
+                                     BorderPane.alignment="CENTER"/>
+                    </children>
+                </HBox>
+            </bottom>
+            <right>
+                <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER"/>
+            </right>
+        </BorderPane>
+    </children>
+</StackPane>
