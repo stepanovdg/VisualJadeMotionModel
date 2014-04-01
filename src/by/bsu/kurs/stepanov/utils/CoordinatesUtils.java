@@ -11,16 +11,16 @@ import by.bsu.kurs.stepanov.types.Coordinates;
  */
 public class CoordinatesUtils {
     private static CoordinatesUtils coordinatesUtils;
-    private static Double xMax;
-    private static Double yMax;
-    private static Double latitudeMax;
-    private static Double latitudeMin;
-    private static Double longitudeMax;
-    private static Double longitudeMin;
+    private Double xMax;
+    private Double yMax;
+    private Double latitudeMax;
+    private Double latitudeMin;
+    private Double longitudeMax;
+    private Double longitudeMin;
 
-    private static Double mapCenterLongitude;
-    private static Double mapCenterLatitude;
-    private static Integer zoomLevel;
+    private Double mapCenterLongitude;
+    private Double mapCenterLatitude;
+    private Integer zoomLevel;
 
     private static Double[] zoomLevels = new Double[]{156367.87, 78183.93, 39091.97, 19545.98,
             9772.99, 4886.50, 2443.25, 1221.62, 610.81, 305.41, 152.70, 76.35, 38.18, 19.09, 9.54, 4.77,
@@ -29,7 +29,7 @@ public class CoordinatesUtils {
     public CoordinatesUtils() {
     }
 
-    private static CoordinatesUtils getInstance() {
+    public static CoordinatesUtils getInstance() {
         if (coordinatesUtils == null) {
             coordinatesUtils = new CoordinatesUtils();
         }
@@ -40,13 +40,13 @@ public class CoordinatesUtils {
         coordinatesUtils = null;
     }
 
-    public static void setResolution(Double x, Double y) {
+    public void setResolution(Double x, Double y) {
 //        System.out.println("x=" + x + " y=" + y);
         xMax = x;
         yMax = y;
     }
 
-    public static void setMapCenterZoom(Double lon, Double lat, Integer zoom) {
+    public void setMapCenterZoom(Double lon, Double lat, Integer zoom) {
 //        System.out.println("SetMapCenter called");
         mapCenterLatitude = lat;
         mapCenterLongitude = lon;
@@ -55,7 +55,7 @@ public class CoordinatesUtils {
                 lon + xMax / 2 * zoomLevels[zoom], lon - xMax / 2 * zoomLevels[zoom]);*/
     }
 
-    public static void setMapBorders(Double latMax, Double latMin, Double longMax, Double longMin) {
+    public void setMapBorders(Double latMax, Double latMin, Double longMax, Double longMin) {
 //        System.out.println("SetMapBorders called");
         latitudeMax = latMax;
         latitudeMin = latMin;
@@ -63,7 +63,7 @@ public class CoordinatesUtils {
         longitudeMin = longMin;
     }
 
-    public static double yFromWorld(Double latitude) {
+    public double yFromWorld(Double latitude) {
         Double dif = difLatitude(latitudeMax, latitudeMin);
         Double zoom = dif / yMax;
         dif = difLatitude(latitude, latitudeMin);
@@ -71,7 +71,7 @@ public class CoordinatesUtils {
         return yMax - (dif / (zoom));
     }
 
-    public static double xFromWorld(Double longtitude) {
+    public double xFromWorld(Double longtitude) {
         Double dif = difLongtitude(longitudeMax, longitudeMin);
         Double zoom = dif / xMax;
         dif = difLongtitude(longtitude, longitudeMin);
@@ -79,11 +79,11 @@ public class CoordinatesUtils {
         return dif / (zoom);
     }
 
-    public static double xFromWorld(Coordinates from) {
+    public double xFromWorld(Coordinates from) {
         return xFromWorld(from.getLongitude());
     }
 
-    public static double yFromWorld(Coordinates from) {
+    public double yFromWorld(Coordinates from) {
         return yFromWorld(from.getLatitude());
     }
 
@@ -98,5 +98,9 @@ public class CoordinatesUtils {
     private static double difLatitude(Double max, Double min) {
         Double dif = max - min;
         return dif;
+    }
+
+    public void setMapCenterZoom(String lonC, String latC, String zoom) {
+        setMapCenterZoom(Double.valueOf(lonC), Double.valueOf(latC), Integer.valueOf(zoom));
     }
 }

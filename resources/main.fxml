@@ -17,8 +17,8 @@
             <center>
                 <Group fx:id="webViewGroup" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
                     <children>
-                        <WebView fx:id="webView" minHeight="-Infinity" minWidth="-Infinity" prefHeight="520.0"
-                                 prefWidth="600.0"/>
+                        <WebView fx:id="webView" minHeight="-Infinity" minWidth="-Infinity" prefHeight="503.0"
+                                 prefWidth="572.0"/>
                         <Group fx:id="nodes"/>
                         <Group fx:id="roads"/>
                         <Group fx:id="transports"/>
@@ -26,26 +26,51 @@
                 </Group>
             </center>
             <left>
-                <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER"/>
+                <VBox prefWidth="108.0" BorderPane.alignment="CENTER">
+                    <children>
+                        <ToolBar orientation="VERTICAL" prefWidth="108.0" scaleX="0.97" scaleY="0.97"
+                                 style="-fx-background-color:white" styleClass="tool-bar" VBox.vgrow="ALWAYS"
+                                 xmlns:fx="http://javafx.com/fxml">
+                            <items>
+                                <Button fx:id="lockMapButton" mnemonicParsing="false" onAction="#lockMap"
+                                        prefHeight="23.0" prefWidth="98.0" text="Lock Map" textAlignment="CENTER"/>
+                                <Button fx:id="addNodeButton" mnemonicParsing="false" onAction="#addNode"
+                                        prefHeight="23.0" prefWidth="98.0" text="Add Node" textAlignment="CENTER"/>
+                                <Button fx:id="addRoadButton" mnemonicParsing="false" onAction="#addRoad"
+                                        prefHeight="23.0" prefWidth="98.0" text="Add Road"/>
+                                <Button fx:id="addTransportButton" mnemonicParsing="false" onAction="#addTransport"
+                                        prefHeight="23.0" prefWidth="98.0" text="Add Trans" textAlignment="CENTER"/>
+                            </items>
+                        </ToolBar>
+                        <TableView fx:id="table" disable="true" prefWidth="108.0" xmlns:fx="http://javafx.com/fxml">
+                            <columns>
+                                <TableColumn fx:id="nameColumn" editable="false" maxWidth="54.0" prefWidth="54.0"
+                                             resizable="false" sortable="false" text="Name"/>
+                                <TableColumn fx:id="valueColumn" editable="false" maxWidth="54.0" prefWidth="54.0"
+                                             resizable="false" sortable="false" text="Value"/>
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
             </left>
             <top>
                 <ToolBar prefWidth="200.0" xmlns:fx="http://javafx.com/fxml">
                     <items>
                         <Button fx:id="loadMapButton" mnemonicParsing="false" onAction="#loadMapAction" text="LoadMap"/>
-                        <Button fx:id="initAgentsButton" mnemonicParsing="false" onAction="#initAgents"
+                        <Button fx:id="initAgentsButton" disable="true" mnemonicParsing="false" onAction="#initAgents"
                                 text="Init Agents"/>
-                        <Button fx:id="start" disable="true" mnemonicParsing="false" onAction="#start"
+                        <Button fx:id="startButton" disable="true" mnemonicParsing="false" onAction="#start"
                                 text="Start moving"/>
-                        <Button fx:id="stopAgents" mnemonicParsing="false" onAction="#stopAgents" prefHeight="25.0"
-                                prefWidth="58.0" text="Stop"/>
+                        <Button fx:id="stopAgentsButton" mnemonicParsing="false" onAction="#stopAgents"
+                                prefHeight="25.0" prefWidth="58.0" text="Stop"/>
                     </items>
                 </ToolBar>
             </top>
             <bottom>
                 <HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
                     <children>
-                        <ProgressBar layoutX="-6.0" layoutY="373.0" prefWidth="200.0" progress="0.0"
-                                     BorderPane.alignment="CENTER"/>
+                        <ProgressBar layoutX="-6.0" layoutY="373.0" maxWidth="1.7976931348623157E308" prefWidth="800.0"
+                                     progress="0.0" BorderPane.alignment="CENTER"/>
                     </children>
                 </HBox>
             </bottom>

@@ -1,6 +1,11 @@
 package by.bsu.kurs.stepanov.visualisation.control;
 
 import by.bsu.kurs.stepanov.types.Coordinates;
+import by.bsu.kurs.stepanov.visualisation.agents.NodeAgentUi;
+import by.bsu.kurs.stepanov.visualisation.agents.RoadAgentUi;
+import by.bsu.kurs.stepanov.visualisation.agents.TransportAgentUi;
+
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,6 +30,12 @@ public interface MapFX {
     void addTransportMarker(String name, Coordinates situated, Coordinates destination, String status);
 
     public void moveTransportMarker(String name, Coordinates next, int roadPercent);
+
+    public Map<Coordinates, NodeAgentUi> getNodes();
+
+    public Map<String, TransportAgentUi> getTransports();
+
+    public Map<String, RoadAgentUi> getRoads();
 
     public void setRoad(Coordinates from, Coordinates to);
 }

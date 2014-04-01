@@ -14,6 +14,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -78,8 +79,8 @@ public class MapScene extends Application implements MapFX {
     }
 
     public void addNodeMarker(String name, Double lat, Double lng, Boolean active) {
-        NodeAgentUi marker = new NodeAgentUi(name, lat, lng);
-        markers.put(name, marker);
+//        NodeAgentUi marker = new NodeAgentUi(name, lat, lng);
+//        markers.put(name, marker);
     }
 
 
@@ -100,6 +101,21 @@ public class MapScene extends Application implements MapFX {
     @Override
     public void moveTransportMarker(String name, Coordinates next, int roadPercent) {
 
+    }
+
+    @Override
+    public Map<Coordinates, NodeAgentUi> getNodes() {
+        return null;
+    }
+
+    @Override
+    public Map<String, TransportAgentUi> getTransports() {
+        return null;
+    }
+
+    @Override
+    public Map<String, RoadAgentUi> getRoads() {
+        return null;
     }
 
     @Override

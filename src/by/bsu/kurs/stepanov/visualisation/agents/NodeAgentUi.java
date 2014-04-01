@@ -10,6 +10,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 
+import java.util.ArrayList;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Stepanov Dmitriy
@@ -20,6 +22,7 @@ import javafx.scene.input.MouseEvent;
 public class NodeAgentUi {
     public enum Status {UI, READY, DESTINATION, FOUND_DESTINATION, DISTANCE}
 
+    private Coordinates coordinates;
     private Double lat;
     private Double lng;
     private Status status = Status.UI;
@@ -32,18 +35,16 @@ public class NodeAgentUi {
     private static Image foundDestinationPointer = new Image("/green.png");
     private static Image distancePointer = new Image("/yellow.png");
     private static Image readyPointer = new Image("/blue.png");
+    private ArrayList<String> roads = new ArrayList<>();
 
     public NodeAgentUi(String name, Coordinates coordinates) {
-        this(name, coordinates.getLatitude(), coordinates.getLongitude());
-    }
-
-    public NodeAgentUi(String name, final Double lat, final Double lng) {
         this.name = name;
-        this.lat = lat;
-        this.lng = lng;
+        this.coordinates = coordinates;
+        this.lat = coordinates.getLatitude();
+        this.lng = coordinates.getLongitude();
         image = new ImageView();
-        image.setX(CoordinatesUtils.xFromWorld(lng) - (0.5) * (uiPointer.getWidth()));
-        image.setY(CoordinatesUtils.yFromWorld(lat) - (1) * (uiPointer.getHeight()));
+        image.setX(CoordinatesUtils.getInstance().xFromWorld(lng) - (0.5) * (uiPointer.getWidth()));
+        image.setY(CoordinatesUtils.getInstance().yFromWorld(lat) - (1) * (uiPointer.getHeight()));
         image.setScaleX(0.5);
         image.setScaleY(0.5);
         image.setY(image.getY() + (0.25) * (uiPointer.getHeight()));
@@ -73,6 +74,10 @@ public class NodeAgentUi {
         image.setImage(img);
     }
 
+    public Coordinates getCoordinates() {
+        return coordinates;
+    }
+
     public String getName() {
         return name;
     }
@@ -91,6 +96,14 @@ public class NodeAgentUi {
 
     public ImageView getImage() {
         return image;
+    }
+
+    public void addRoad(String name) {
+        roads.add(name);
+    }
+
+    public ArrayList getRoads() {
+        return roads;
     }
 
     @Override

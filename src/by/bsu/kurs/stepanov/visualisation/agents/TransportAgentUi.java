@@ -45,8 +45,8 @@ public class TransportAgentUi {
         this.destination = destination;
         image = new ImageView();
         vector = new Line();
-        image.setX(CoordinatesUtils.xFromWorld(situated) - (0.5) * (uiPointer.getWidth()));
-        image.setY(CoordinatesUtils.yFromWorld(situated) - (0.5) * (uiPointer.getHeight()));
+        image.setX(CoordinatesUtils.getInstance().xFromWorld(situated) - (0.5) * (uiPointer.getWidth()));
+        image.setY(CoordinatesUtils.getInstance().yFromWorld(situated) - (0.5) * (uiPointer.getHeight()));
         image.setScaleX(0.5);
         image.setScaleY(0.5);
         setImage(uiPointer);
@@ -82,8 +82,8 @@ public class TransportAgentUi {
     public void calculateVector() {
         vector.setStartX(image.getX() + image.getImage().getWidth() / 2);
         vector.setStartY(image.getY() + image.getImage().getHeight() / 2);
-        vector.setEndX(CoordinatesUtils.xFromWorld(destination));
-        vector.setEndY(CoordinatesUtils.yFromWorld(destination));
+        vector.setEndX(CoordinatesUtils.getInstance().xFromWorld(destination));
+        vector.setEndY(CoordinatesUtils.getInstance().yFromWorld(destination));
     }
 
     private void setImage(Image img) {
@@ -107,6 +107,14 @@ public class TransportAgentUi {
         if (situated.equals(destination)) {
             changeStatus(Status.FINISH);
         }
+    }
+
+    public Coordinates getDestination() {
+        return destination;
+    }
+
+    public void setDestination(Coordinates destination) {
+        this.destination = destination;
     }
 
     public String getName() {

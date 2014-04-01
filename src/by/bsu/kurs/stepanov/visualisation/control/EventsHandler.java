@@ -1,5 +1,6 @@
 package by.bsu.kurs.stepanov.visualisation.control;
 
+import by.bsu.kurs.stepanov.types.Constants;
 import by.bsu.kurs.stepanov.types.Coordinates;
 import by.bsu.kurs.stepanov.utils.ExceptionUtils;
 import by.bsu.kurs.stepanov.visualisation.AtomicTimelineService;
@@ -11,6 +12,10 @@ import javafx.application.Platform;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Path;
 
 import java.util.*;
 
@@ -31,13 +36,35 @@ public class EventsHandler implements MapFX {
     private volatile Map<Coordinates, NodeAgentUi> nodes;
     private volatile Map<String, RoadAgentUi> roads;
     private volatile Map<String, TransportAgentUi> transports;
+    private volatile Map<ImageView, NodeAgentUi> nodesByImage;
+    private volatile Map<Path, RoadAgentUi> roadsByImage;
+    private volatile Map<ImageView, TransportAgentUi> transportsByImage;
     private volatile Queue<MapEvent> mapEvents = new ArrayDeque<>();
+    private Controller.State state;
+    private final EventsHandler handler;
+    private Coordinates firstRoadEnd = null;
+    private Coordinates transportSituated = null;
+    private Integer counter = 0;
+    private Line roadDrawingVector = new Line();
+    private Line transportDrawingVector = new Line();
+    private ImageView lastNodeDragged = null;
+
 
     public EventsHandler(Group webViewGroup) {
+        handler = this;
         setGroup(webViewGroup);
+        roadDrawingVector.setVisible(false);
+        roadDrawingVector.setScaleX(0.5);
+        roadDrawingVector.setScaleY(0.5);
+        roadGr.getChildren().add(roadDrawingVector);
+        transportDrawingVector.setVisible(false);
+        transportGr.getChildren().add(transportDrawingVector);
         nodes = new HashMap<>();
         roads = new HashMap<>();
         transports = new HashMap<>();
+        nodesByImage = new HashMap<>();
+        roadsByImage = new HashMap<>();
+        transportsByImage = new HashMap<>();
         createTimeLine();
     }
 
@@ -57,9 +84,82 @@ public class EventsHandler implements MapFX {
                         ui.changeStatus(status);
                     } else {
                         final NodeAgentUi ui = new NodeAgentUi(name, coordinates);
+                        ui.getImage().setOnMouseClicked(new EventHandler<MouseEvent>() {
+                            @Override
+                            public void handle(MouseEvent paramT) {
+                                if (paramT.isShiftDown()) {
+                                    handler.removeNode(paramT.getSource());
+                                } else if (state == Controller.State.ROAD) {
+                                    handler.handleRoadEvent(paramT);
+                                } else if (state == Controller.State.TRANSPORT) {
+                                    handler.handleTransportEvent(paramT);
+                                }
+                            }
+                        });
+                        /*ui.getImage().setOnMousePressed(new EventHandler<MouseEvent>() {
+                            @Override
+                            public void handle(MouseEvent paramT) {
+                                if (state == Controller.State.ROAD) {
+                                    roadDrawingVector.setVisible(true);
+                                    roadDrawingVector.setStartX(paramT.getX());
+                                    roadDrawingVector.setStartY(paramT.getY());
+                                    handler.handleRoadEvent(paramT);
+                                } else if (state == Controller.State.TRANSPORT) {
+                                    transportDrawingVector.setVisible(true);
+                                    transportDrawingVector.setStartX(paramT.getX());
+                                    transportDrawingVector.setStartY(paramT.getY());
+                                    handler.handleTransportEvent(paramT);
+                                }
+                            }
+                        });
+                        ui.getImage().setOnMouseReleased(new EventHandler<MouseEvent>() {
+                            @Override
+                            public void handle(MouseEvent paramT) {
+                                if (state == Controller.State.ROAD) {
+                                    roadDrawingVector.setVisible(false);
+                                    handler.handleRoadEvent(paramT);
+                                } else if (state == Controller.State.TRANSPORT) {
+                                    transportDrawingVector.setVisible(false);
+                                    handler.handleTransportEvent(paramT);
+                                }
+                            }
+                        });
+                        ui.getImage().setOnMouseDragEntered(new EventHandler<MouseDragEvent>() {
+                            @Override
+                            public void handle(MouseDragEvent paramT) {
+                                System.out.println("lastNodeDragged = (ImageView) paramT.getSource()");
+                                lastNodeDragged = (ImageView) paramT.getSource();
+                            }
+                        });
+                        ui.getImage().setOnMouseDragExited(new EventHandler<MouseDragEvent>() {
+                            @Override
+                            public void handle(MouseDragEvent paramT) {
+                                System.out.println("lastNodeDragged = null");
+                                lastNodeDragged = null;
+                            }
+                        });
+                        ui.getImage().setOnMouseDragged(new EventHandler<MouseEvent>() {
+                            @Override
+                            public void handle(MouseEvent paramT) {
+                                Double x = ((ImageView) paramT.getSource()).getX();
+                                Double y = ((ImageView) paramT.getSource()).getY();
+
+                                if (state == Controller.State.ROAD) {
+                                    roadDrawingVector.setEndX(paramT.getX());
+                                    roadDrawingVector.setEndY(paramT.getY());
+                                } else if (state == Controller.State.TRANSPORT) {
+                                    transportDrawingVector.setEndX(paramT.getX());
+                                    transportDrawingVector.setEndY(paramT.getY());
+                                }
+                            }
+                        }); */
+
                         ui.changeStatus(status);
                         nodes.put(coordinates, ui);
-                        nodeGr.getChildren().add(ui.getImage());
+                        boolean flag = nodeGr.getChildren().add(ui.getImage());
+                        if (flag) {
+                            nodesByImage.put(ui.getImage(), ui);
+                        }
                     }
                 } catch (Throwable t) {
                     ExceptionUtils.handleException(t);
@@ -86,9 +186,20 @@ public class EventsHandler implements MapFX {
                             ui.changeStatus(status);
                         } else {
                             RoadAgentUi ui = new RoadAgentUi(name, from, to, mode);
+                            ui.getRoad().setOnMouseClicked(new EventHandler<MouseEvent>() {
+                                @Override
+                                public void handle(MouseEvent paramT) {
+                                    if (paramT.isShiftDown()) {
+                                        handler.removeRoad(paramT.getSource());
+                                    }
+                                }
+                            });
                             ui.changeStatus(status);
                             roads.put(name, ui);
-                            roadGr.getChildren().add(ui.getRoad());
+                            boolean flag = roadGr.getChildren().add(ui.getRoad());
+                            if (flag) {
+                                roadsByImage.put(ui.getRoad(), ui);
+                            }
                         }
                     } else {
                         throw new Throwable("not existing node");
@@ -121,9 +232,20 @@ public class EventsHandler implements MapFX {
 
                         } else {
                             TransportAgentUi ui = new TransportAgentUi(name, situated, destination, nodes.get(destination).getName());
+                            ui.getTransportImage().setOnMouseClicked(new EventHandler<MouseEvent>() {
+                                @Override
+                                public void handle(MouseEvent paramT) {
+                                    if (paramT.isShiftDown()) {
+                                        handler.removeTransport(paramT.getSource());
+                                    }
+                                }
+                            });
                             ui.changeStatus(status);
                             transports.put(name, ui);
-                            transportGr.getChildren().add(ui.getTransportImage());
+                            boolean flag = transportGr.getChildren().add(ui.getTransportImage());
+                            if (flag) {
+                                transportsByImage.put(ui.getTransportImage(), ui);
+                            }
                             transportGr.getChildren().add(ui.getTransportVector());
                         }
                     } else {
@@ -134,6 +256,54 @@ public class EventsHandler implements MapFX {
                 }
             }
         });
+    }
+
+    private void removeTransport(Object source) {
+        TransportAgentUi ui = transportsByImage.get(source);
+        transportGr.getChildren().remove(source);
+        transports.remove(ui.getName());
+    }
+
+    private void removeRoad(Object source) {
+        RoadAgentUi ui = roadsByImage.get(source);
+        roadGr.getChildren().remove(source);
+        roads.remove(ui.getName());
+    }
+
+    private void removeNode(Object source) {
+        NodeAgentUi ui = nodesByImage.get(source);
+        nodeGr.getChildren().remove(source);
+        nodes.remove(ui.getCoordinates());
+    }
+
+    private void handleTransportEvent(MouseEvent paramT) {
+        ImageView iv = (ImageView) paramT.getSource();
+        NodeAgentUi ui = nodesByImage.get(iv);
+        if (ui == null) return;
+        if (transportSituated != null) {
+            Coordinates transportEnd = ui.getCoordinates();
+            if (transportSituated == transportEnd) return;
+            addTransportMarker("Transport" + counter++, transportSituated, transportEnd, "UI");
+            transportSituated = null;
+        } else {
+            transportSituated = ui.getCoordinates();
+        }
+    }
+
+    private void handleRoadEvent(MouseEvent paramT) { //todo add dialog
+        NodeAgentUi ui = nodesByImage.get(paramT.getSource());
+        if (ui == null) return;
+        if (firstRoadEnd != null) {
+            Coordinates secondRoadEnd = ui.getCoordinates();
+            if (firstRoadEnd == secondRoadEnd) return;
+            String name = nodes.get(firstRoadEnd).getName() + Constants.COORDINATE_SPLITTER + ui.getName();
+            addRoadMarker(name, firstRoadEnd, secondRoadEnd, 0, "UI");
+            ui.addRoad(name);
+            nodes.get(firstRoadEnd).addRoad(name);
+            firstRoadEnd = null;
+        } else {
+            firstRoadEnd = ui.getCoordinates();
+        }
     }
 
     @Override
@@ -176,6 +346,17 @@ public class EventsHandler implements MapFX {
         atc.start();
     }
 
+    public void reset() {
+        nodeGr.getChildren().removeAll();
+        nodes.clear();
+        nodesByImage.clear();
+        roadGr.getChildren().removeAll();
+        roads.clear();
+        roadsByImage.clear();
+        transportGr.getChildren().removeAll();
+        transports.clear();
+        transportsByImage.clear();
+    }
    /* public void moveTransport(Coordinates next, int roadPercent, final TransportAgentUi ui) {
         ImageView image = ui.getTransportImage();
         Coordinates situated = ui.getSituated();
@@ -253,4 +434,32 @@ public class EventsHandler implements MapFX {
 
         return transition;
     } */
+
+    public Map<String, RoadAgentUi> getRoads() {
+        return roads;
+    }
+
+    public void setRoads(Map<String, RoadAgentUi> roads) {
+        this.roads = roads;
+    }
+
+    public Map<String, TransportAgentUi> getTransports() {
+        return transports;
+    }
+
+    public void setTransports(Map<String, TransportAgentUi> transports) {
+        this.transports = transports;
+    }
+
+    public Map<Coordinates, NodeAgentUi> getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(Map<Coordinates, NodeAgentUi> nodes) {
+        this.nodes = nodes;
+    }
+
+    public void setState(Controller.State state) {
+        this.state = state;
+    }
 }

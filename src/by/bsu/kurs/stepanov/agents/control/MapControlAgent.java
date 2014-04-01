@@ -1,8 +1,12 @@
 package by.bsu.kurs.stepanov.agents.control;
 
 import by.bsu.kurs.stepanov.types.*;
-import by.bsu.kurs.stepanov.visualisation.control.MapFX;
+import by.bsu.kurs.stepanov.utils.ExceptionUtils;
+import by.bsu.kurs.stepanov.visualisation.agents.NodeAgentUi;
+import by.bsu.kurs.stepanov.visualisation.agents.RoadAgentUi;
+import by.bsu.kurs.stepanov.visualisation.agents.TransportAgentUi;
 import by.bsu.kurs.stepanov.visualisation.application.Runner;
+import by.bsu.kurs.stepanov.visualisation.control.MapFX;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -13,10 +17,7 @@ import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -59,12 +60,22 @@ public class MapControlAgent extends Agent {
     protected void setup() {
         addLogBehaviour();
         if (getArguments() != null) {
-            initMapScene(getArguments());
-            init(getArguments());
+            try {
+                initMapScene(getArguments());
+                init(getArguments());
+            } catch (StaleProxyException e) {
+                ExceptionUtils.handleException(e);
+                reset();
+                init();
+            }
         } else {
-            init(null);
+            init();
         }
 
+    }
+
+    private void reset() {
+        //todo implement reset method
     }
 
     private void addLogBehaviour() {
@@ -79,7 +90,7 @@ public class MapControlAgent extends Agent {
                         try {
                             reply = chooseAction(msg);
                         } catch (UnreadableException e) {
-                            e.printStackTrace(); // todo
+                            ExceptionUtils.handleException(e);
                         }
                     }
                     if (reply != null) {
@@ -205,7 +216,74 @@ public class MapControlAgent extends Agent {
         transportAgents = (List<String>) arguments[0];
     }
 
-    private void init(Object[] arguments) {
+    private void init(Object[] arguments) throws StaleProxyException {
+        if (map.getNodes().isEmpty()) {
+            init();
+            return;
+        }
+        nodeAgents = new HashMap<>();
+        roadAgents = new ArrayList<>();
+        transportAgents = new ArrayList<>();
+        AgentContainer mainContainer = getContainerController();
+        Map<Coordinates, NodeAgentUi> nodes = map.getNodes();
+        Map<String, RoadAgentUi> roads = map.getRoads();
+        Map<String, TransportAgentUi> transports = map.getTransports();
+        NodeAgentUi naui;
+        for (Coordinates coord : nodes.keySet()) {
+            naui = nodes.get(coord);
+            try {
+                createNode(naui.getName(), mainContainer, coord, createAID(naui.getRoads()));
+            } catch (StaleProxyException e) {
+                ExceptionUtils.handleException(e);
+            }
+        }
+        RoadAgentUi raui;
+        for (String names : roads.keySet()) {
+            raui = roads.get(names);
+            try {
+                Coordinates from = raui.getFrom();
+                Coordinates to = raui.getTo();
+                Double length = (Coordinates.countLength(from, to) * Constants.LENGTH_PER_COORDINATES);
+                System.out.println("road " + raui.getName() + " length=" + length);
+                createRoad(raui.getName(), mainContainer, length.intValue(),
+                        createAID(nodes.get(from).getName()), createAID(nodes.get(to).getName()), raui.getRoadMotionMode());
+            } catch (StaleProxyException e) {
+                ExceptionUtils.handleException(e);
+            }
+        }
+        TransportAgentUi taui;
+        for (String names : transports.keySet()) {
+            taui = transports.get(names);
+            try {
+                Coordinates from = taui.getSituated();
+                Coordinates to = taui.getDestination();
+                createCar(taui.getName(), mainContainer, createAID(nodes.get(from).getName()), createAID(nodes.get(to).getName()));
+            } catch (StaleProxyException e) {
+                ExceptionUtils.handleException(e);
+            }
+        }
+        agc1 = Runner.createAtomicMotionAgent("A1", mainContainer, createAID(roadAgents));
+        startTransport();
+    }
+
+    private void startTransport() {
+        try {
+            agc1.start();
+            ACLMessage msg = new ACLMessage(Constants.MESSAGE);
+            PurposeHandler ph = new PurposeHandler(Constants.START);
+            msg.setContentObject(ph);
+            for (String name : transportAgents) {
+                msg.addReceiver(createAID(name));
+            }
+            doWait(10000);
+            send(msg);
+        } catch (StaleProxyException | IOException e) {
+            ExceptionUtils.handleException(e);
+        }
+
+    }
+
+    private void init() {
         nodeAgents = new HashMap<>();
         roadAgents = new ArrayList<>();
         transportAgents = new ArrayList<>();
@@ -226,7 +304,7 @@ public class MapControlAgent extends Agent {
             send(msg);
 //            System.out.println("Cars start to move");
         } catch (StaleProxyException | IOException e) {
-            e.printStackTrace();
+            ExceptionUtils.handleException(e);
         }
 
     }
@@ -243,6 +321,7 @@ public class MapControlAgent extends Agent {
         if (map != null) {
             map.addTransportMarker(name, from, to, "UI");
         }
+        transportAgents.add(name);
         agc.start();
     }
 
@@ -270,6 +349,7 @@ public class MapControlAgent extends Agent {
 
     }
 
+
     private void generateNodes(AgentContainer mainContainer) throws StaleProxyException {
         AID road1 = new AID("N0:N1" + JADE_PREFIX, ISGUUID);
         AID road2 = new AID("N1:N2" + JADE_PREFIX, ISGUUID);
@@ -293,13 +373,29 @@ public class MapControlAgent extends Agent {
     }
 
     private void createNode(String name, AgentContainer mainContainer, Double lat, Double lng, Object[] roads) throws StaleProxyException {
+        Coordinates coordinates = new Coordinates(lat, lng);
+        createNode(name, mainContainer, coordinates, roads);
+    }
+
+    private void createNode(String name, AgentContainer mainContainer, Coordinates coordinates, Object[] roads) throws StaleProxyException {
         AgentController agc = Runner.createNodeAgent(name, mainContainer, roads);
         AID nameA = new AID(name, ISGUUID);
-        Coordinates coordinates = new Coordinates(lat, lng);
         nodeAgents.put(nameA, coordinates);
         agc.start();
         if (map != null) {
             map.addNodeMarker(nameA.getLocalName(), coordinates, "UI");
         }
+    }
+
+    private AID createAID(String name) {
+        return new AID(name + JADE_PREFIX, ISGUUID);
+    }
+
+    private Object[] createAID(Collection<String> collection) {
+        Collection<Object> aids = new ArrayList<>();
+        for (String element : collection) {
+            aids.add(createAID(element));
+        }
+        return aids.toArray();
     }
 }

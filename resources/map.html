@@ -1,200 +1,239 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
-    <style type="text/css">
-        html {
-            height: 100%
-        }
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<style type="text/css">
+    html {
+        height: 100%
+    }
 
-        body {
-            height: 100%;
-            margin: 0;
-            padding: 0
-        }
+    body {
+        height: 100%;
+        margin: 0;
+        padding: 0
+    }
 
-        #map_canvas {
-            height: 100%
-        }
-    </style>
-    <script type="text/javascript"
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdK82vo9t-CEFEp3fe9KKNmHd0cOiT7S8&sensor=false">
-    </script>
-    <script type="text/javascript">
-        var map;
-        var centerLat;
-        var centerLon;
-        var marker;
-        var zoom;
+    #map_canvas {
+        height: 100%
+    }
+</style>
+<script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdK82vo9t-CEFEp3fe9KKNmHd0cOiT7S8&sensor=false">
+</script>
+<script type="text/javascript">
+var map;
+var centerLat;
+var centerLon;
+var marker;
+var zoom;
 
-        function get_click_position(event) {
-            var location = event.latLng;
-            var lat = location.lat();
-            var lng = location.lng();
-            //setMarkerPosition(lat, lng);
-            //app.handle(lat, lng);
-            getMapBorders();
-            getMapCenter();
-        }
+function get_click_position(event) {
+    var location = event.latLng;
+    var lat = location.lat();
+    var lng = location.lng();
+    //setMarkerPosition(lat, lng);
+    //app.handle(lat, lng);
+    getMapBorders(lat, lng);
+    getMapCenter();
+}
 
-        function setMarkerPosition(lat, lng) {
-            var clickLatLng = new google.maps.LatLng(lat, lng);
-            marker.setPosition(clickLatLng);
-        }
+function setMarkerPosition(lat, lng) {
+    var clickLatLng = new google.maps.LatLng(lat, lng);
+    marker.setPosition(clickLatLng);
+}
 
-        function addMarkerPosition(lat, lng) {
-            var clickLatLng = new google.maps.LatLng(lat, lng);
-            var nodeMarker = new google.maps.Marker({
-                position: clickLatLng,
-                map: map,
-                icon: "red-dot.png"
-            });
-        }
+function addMarkerPosition(lat, lng) {
+    var clickLatLng = new google.maps.LatLng(lat, lng);
+    var nodeMarker = new google.maps.Marker({
+        position: clickLatLng,
+        map: map,
+        icon: "red-dot.png"
+    });
+}
 
-        function addRoad(lat, lng, lat1, lng1) {
-            var latLng = new google.maps.LatLng(lat, lng);
-            var latLng1 = new google.maps.LatLng(lat1, lng1);
-            var myCoordinates = [
-                latLng, latLng1
-            ];
-            var polyOptions = {
-                path: myCoordinates,
-                strokeColor: "#FF0000",
-                strokeOpacity: 1,
-                strokeWeight: 3
-            }
-            var it = new google.maps.Polyline(polyOptions);
-            it.setMap(map);
-        }
+function addRoad(lat, lng, lat1, lng1) {
+    var latLng = new google.maps.LatLng(lat, lng);
+    var latLng1 = new google.maps.LatLng(lat1, lng1);
+    var myCoordinates = [
+        latLng, latLng1
+    ];
+    var polyOptions = {
+        path: myCoordinates,
+        strokeColor: "#FF0000",
+        strokeOpacity: 1,
+        strokeWeight: 3
+    }
+    var it = new google.maps.Polyline(polyOptions);
+    it.setMap(map);
+}
 
-        function startJumping() {
-            marker.setAnimation(google.maps.Animation.BOUNCE);
-        }
+function startJumping() {
+    marker.setAnimation(google.maps.Animation.BOUNCE);
+}
 
-        function stopJumping() {
-            marker.setAnimation(google.maps.Animation.BOUNCE);
-        }
+function stopJumping() {
+    marker.setAnimation(google.maps.Animation.BOUNCE);
+}
 
-        function setMapCenter(lat, lng) {
-            var latlng = new google.maps.LatLng(lat, lng);
-            centerLat = lat;
-            centerLon = lng;
+function setMapCenter(lat, lng) {
+    var latlng = new google.maps.LatLng(lat, lng);
+    centerLat = lat;
+    centerLon = lng;
 
-            getMapCenter();
-        }
+    getMapCenter();
+}
 
-        function getMapCenter() {
-            //return map.getCenter();
-            //return center;
-            //app.handle(center);
-            if (typeof app === "undefined") {
-                alert("app is undefined");
-            }
-            if (typeof centerLat === "undefined") {
-                alert("centerLat is undefined");
-            }
+function setMapDraggable(draggable) {
+    /* map.setOptions({draggable: draggable});
+     map.setOptions({zoomcontrol: draggable}); */
+    map.setOptions({
+        disableDoubleClickZoom: !draggable,
+        zoomcontrol: draggable,
+        scrollwheel: draggable,
+        scaleControl: draggable,
+        draggable: draggable
+    });
+    getMapBorders(centerLat, centerLon);
+}
 
-            app.callback(centerLat, centerLon, zoom);
-        }
+function getMapCenter() {
+    //return map.getCenter();
+    //return center;
+    //app.handle(center);
+    if (typeof app === "undefined") {
+        alert("app is undefined");
+    }
+    if (typeof centerLat === "undefined") {
+        alert("centerLat is undefined");
+    }
 
-        function getMapBorders() {
-            if (typeof map === "undefined") {
-                alert("map is undefined");
-            }
-            var latMax = map.getBounds().getNorthEast().lat();
-            var lngMax = map.getBounds().getNorthEast().lng();
-            var latMin = map.getBounds().getSouthWest().lat();
-            var lngMin = map.getBounds().getSouthWest().lng();
-            alert(latMax);
-            alert(latMin);
-            alert(lngMax);
-            alert(lngMin);
+    app.callback(map.getCenter().lat(), map.getCenter().lng(), map.getZoom());
+}
 
-            app.callback(latMax, latMin, lngMax, lngMin);
-        }
+function getMapBorders() {
+    if (typeof map === "undefined") {
+        alert("map is undefined");
+    }
+    var latMax = map.getBounds().getNorthEast().lat();
+    var lngMax = map.getBounds().getNorthEast().lng();
+    var latMin = map.getBounds().getSouthWest().lat();
+    var lngMin = map.getBounds().getSouthWest().lng();
+    alert(latMax);
+    alert(latMin);
+    alert(lngMax);
+    alert(lngMin);
 
-        function setZoom(zoomLevel) {
-            zoom = zoomLevel;
-            var mapOptions = {
-                zoom: zoom
-            };
-            map.setOptions(mapOptions);
+    app.callback(latMax, latMin, lngMax, lngMin);
+}
 
-            app.callback(centerLat, centerLon, zoom);
-        }
+function getMapBorders(latclick, lonclick) {
+    if (typeof map === "undefined") {
+        alert("map is undefined");
+    }
+    var latMax = map.getBounds().getNorthEast().lat();
+    var lngMax = map.getBounds().getNorthEast().lng();
+    var latMin = map.getBounds().getSouthWest().lat();
+    var lngMin = map.getBounds().getSouthWest().lng();
+    alert(latMax);
+    alert(latMin);
+    alert(lngMax);
+    alert(lngMin);
+    alert(latclick);
+    alert(lonclick);
+    var centerLATT = map.getCenter().lat();
+    var centerLON = map.getCenter().lng();
+    var centerZOOM = map.getZoom();
+    alert(centerLATT);
+    alert(centerLON);
+    alert(centerZOOM);
 
-        function getZoom() {
-            //return map.getCenter();
-            //return zoom;
-            //app.handle(zoom);
-        }
-
-        function switchSatellite() {
-            var mapOptions = {
-                mapTypeId: google.maps.MapTypeId.SATELLITE
-            };
-            map.setOptions(mapOptions);
-            setLightMarkerIcon();
-        }
-
-        function switchRoadmap() {
-            var mapOptions = {
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            };
-            map.setOptions(mapOptions);
-            setDarkMarkerIcon();
-        }
-
-        function switchHybrid() {
-            var mapOptions = {
-                mapTypeId: google.maps.MapTypeId.HYBRID
-            };
-            map.setOptions(mapOptions);
-            setLightMarkerIcon();
-        }
-
-        function switchTerrain() {
-            var mapOptions = {
-                mapTypeId: google.maps.MapTypeId.TERRAIN
-            };
-            map.setOptions(mapOptions);
-            setDarkMarkerIcon();
-        }
-
-        function initialize() {
-            centerLat = 54.92082843149136;
-            centerLon = 23.829345703125;
-            zoom = 7.0;
-            var defLatLng = new google.maps.LatLng(centerLat, centerLon);
-            var mapOptions = {
-                center: defLatLng,
-                zoom: zoom,
-                mapTypeId: google.maps.MapTypeId.ROADMAP,
-                disableDefaultUI: true,
-                panControl: false
-            };
-            map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-            google.maps.event.addListener(map, 'click', get_click_position);
-
-            /*marker = new google.maps.Marker({
-             position: defLatLng,
-             map: map,
-             icon: "red-dot.png"
-             }); */
+    app.callback(centerLATT, centerLON, centerZOOM,
+            latMax, latMin, lngMax, lngMin, latclick, lonclick);
+}
 
 
-            //app.handle(true);
-        }
+function setZoom(zoomLevel) {
+    zoom = zoomLevel;
+    var mapOptions = {
+        zoom: zoom
+    };
+    map.setOptions(mapOptions);
 
-        function setDarkMarkerIcon() {
-            marker.setIcon("red-dot.png");
-        }
+    app.callback(centerLat, centerLon, zoom);
+}
 
-        function setLightMarkerIcon() {
-            marker.setIcon("blue-dot.png");
-        }
+function getZoom() {
+    //return map.getCenter();
+    //return zoom;
+    //app.handle(zoom);
+}
 
-    </script>
+function switchSatellite() {
+    var mapOptions = {
+        mapTypeId: google.maps.MapTypeId.SATELLITE
+    };
+    map.setOptions(mapOptions);
+    setLightMarkerIcon();
+}
+
+function switchRoadmap() {
+    var mapOptions = {
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    map.setOptions(mapOptions);
+    setDarkMarkerIcon();
+}
+
+function switchHybrid() {
+    var mapOptions = {
+        mapTypeId: google.maps.MapTypeId.HYBRID
+    };
+    map.setOptions(mapOptions);
+    setLightMarkerIcon();
+}
+
+function switchTerrain() {
+    var mapOptions = {
+        mapTypeId: google.maps.MapTypeId.TERRAIN
+    };
+    map.setOptions(mapOptions);
+    setDarkMarkerIcon();
+}
+
+function initialize() {
+    centerLat = 54.92082843149136;
+    centerLon = 23.829345703125;
+    zoom = 7.0;
+    var defLatLng = new google.maps.LatLng(centerLat, centerLon);
+    var mapOptions = {
+        center: defLatLng,
+        zoom: zoom,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        disableDefaultUI: true,
+        panControl: false
+    };
+    map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+    google.maps.event.addListener(map, 'click', get_click_position);
+
+    /*marker = new google.maps.Marker({
+     position: defLatLng,
+     map: map,
+     icon: "red-dot.png"
+     }); */
+
+    getMapBorders(centerLat, centerLon);
+    //app.handle(true);
+}
+
+function setDarkMarkerIcon() {
+    marker.setIcon("red-dot.png");
+}
+
+function setLightMarkerIcon() {
+    marker.setIcon("blue-dot.png");
+}
+
+</script>
 </head>
 <body onload="initialize()">
 <div id="map_canvas" style="width:100%; height:100%"></div>

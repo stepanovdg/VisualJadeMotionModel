@@ -8,6 +8,7 @@ package by.bsu.kurs.stepanov.types;
  * To change this template use File | Settings | File Templates.
  */
 public class Constants {
+    public static final Double LENGTH_PER_COORDINATES = 10.0;
     public static final long POLLING_TIME = 10000;
     public static final long TRANSLATE_DURATION = 1000;
     public static final String COORDINATE_SPLITTER = ":";

@@ -136,12 +136,12 @@ public class AtomicTimelineService extends Service {
         ImageView image = ui.getTransportImage();
         Line vector = ui.getTransportVector();
         Coordinates situated = ui.getSituated();
-        Double xDest = CoordinatesUtils.xFromWorld(next);
-        xDest = (xDest - (CoordinatesUtils.xFromWorld(situated))) * roadPercent / 100;
-        xDest = CoordinatesUtils.xFromWorld(situated) + xDest;
-        Double yDest = CoordinatesUtils.yFromWorld(next);
-        yDest = (yDest - (CoordinatesUtils.yFromWorld(situated))) * roadPercent / 100;
-        yDest = CoordinatesUtils.yFromWorld(situated) + yDest;
+        Double xDest = CoordinatesUtils.getInstance().xFromWorld(next);
+        xDest = (xDest - (CoordinatesUtils.getInstance().xFromWorld(situated))) * roadPercent / 100;
+        xDest = CoordinatesUtils.getInstance().xFromWorld(situated) + xDest;
+        Double yDest = CoordinatesUtils.getInstance().yFromWorld(next);
+        yDest = (yDest - (CoordinatesUtils.getInstance().yFromWorld(situated))) * roadPercent / 100;
+        yDest = CoordinatesUtils.getInstance().yFromWorld(situated) + yDest;
         if (roadPercent == 100) {
             ui.changeStatus(TransportAgentUi.Status.WAITING);
             ui.setSituated(next);

@@ -12,6 +12,10 @@ public class Coordinates {
     private Double latitude;   //Широта
     private Double longitude;  //Долгота
 
+    public Coordinates(String latClick, String lonClick) {
+        this(Double.valueOf(latClick), Double.valueOf(lonClick));
+    }
+
     public Double getLatitude() {
         return latitude;
     }

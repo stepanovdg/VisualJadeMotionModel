@@ -39,6 +39,14 @@ public class RoadAgentUi {
     private static Paint readyPaint = Color.BLUE;
     private static Paint uiPaint = Color.RED;
 
+    public int getRoadMotionMode() {
+        return roadMotionMode;
+    }
+
+    public void setRoadMotionMode(int roadMotionMode) {
+        this.roadMotionMode = roadMotionMode;
+    }
+
     public Coordinates getFrom() {
         return from;
     }
@@ -79,8 +87,8 @@ public class RoadAgentUi {
         this.roadMotionMode = roadMotionMode;
         road = new Path();
 
-        createRoad(CoordinatesUtils.xFromWorld(from.getLongitude()), CoordinatesUtils.yFromWorld(from.getLatitude()),
-                CoordinatesUtils.xFromWorld(to.getLongitude()), CoordinatesUtils.yFromWorld(to.getLatitude()));
+        createRoad(CoordinatesUtils.getInstance().xFromWorld(from.getLongitude()), CoordinatesUtils.getInstance().yFromWorld(from.getLatitude()),
+                CoordinatesUtils.getInstance().xFromWorld(to.getLongitude()), CoordinatesUtils.getInstance().yFromWorld(to.getLatitude()));
         tooltip = new Tooltip(name);
         Tooltip.install(road, tooltip);
         changeStatus(Status.UI);
@@ -94,7 +102,14 @@ public class RoadAgentUi {
     }
 
     private void createRoad(Double x, Double y, final Double toX, final Double toY) {
-        final double theta = Math.atan((toX - x) / (toY - y)) * 180 / Math.PI;
+        double yy = (toY - y);
+        double theta = Math.atan((toX - x) / (toY - y)) * 180 / Math.PI;
+        /*if (theta > 90 || theta < -90) {
+            theta = theta + 180;
+        }*/
+        if (yy > 0) {
+            theta = theta + 180;
+        }
         double length = Math.sqrt((toY - y) * (toY - y) + (toX - x) * (toX - x));
         final Path path = new Path();
         path.getTransforms().add(new Rotate(-theta, toX, toY));

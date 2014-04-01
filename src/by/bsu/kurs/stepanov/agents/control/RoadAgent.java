@@ -57,6 +57,9 @@ public class RoadAgent extends Agent {
 
     public RoadAgent(int length, AID firstRoadEnd, AID secondRoadEnd, int roadMotionMode) {
         this.length = length;
+        if (length <= 0) {
+            throw new IllegalArgumentException("Road lenth is les or equals zero");
+        }
         this.firstRoadEnd = firstRoadEnd;
         this.secondRoadEnd = secondRoadEnd;
         this.roadMotionMode = roadMotionMode;
@@ -215,7 +218,7 @@ public class RoadAgent extends Agent {
                 toFirstRoadEndStack[length] = transportAID;
             }
             if (stack == 2) {
-                paintLog(Constants.TRANSPORT_MOVE, transportAID, secondRoadEnd, new IntegerEnvelope(0));
+                paintLog(Constants.TRANSPORT_MOVE, transportAID, secondRoadEnd, new IntegerEnvelope(0));   //todo change firstRoadEnd back to secondroad end  in case of it didn`t help
                 toSecondRoadEndStack[0] = transportAID;
             }
         }
