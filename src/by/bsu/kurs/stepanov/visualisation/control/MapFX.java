@@ -38,4 +38,8 @@ public interface MapFX {
     public Map<String, RoadAgentUi> getRoads();
 
     public void setRoad(Coordinates from, Coordinates to);
+
+    public Logger getLog();
+
+    public void finish();
 }

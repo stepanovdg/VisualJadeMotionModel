@@ -1,0 +1,37 @@
+<agents>
+    <nodes>
+        <node name="N3">
+            <coordinates>
+                <longtitude>
+                    24.36767578125
+                </longtitude>
+                <latitude>
+                    55.64659898563683
+                </latitude>
+            </coordinates>
+        </node>
+        <node name="N1">
+            <coordinates>
+                <longtitude>
+                    23.829345703125
+                </longtitude>
+                <latitude>
+                    54.92082843149136
+                </latitude>
+            </coordinates>
+        </node>
+    </nodes>
+    <roads>
+        <road name="N1:N3">
+            <from>N1</from>
+            <to>N3</to>
+            <roadMode>0</roadMode>
+        </road>
+    </roads>
+    <transports>
+        <transport name="CAR1">
+            <from>N1</from>
+            <to>N3</to>
+        </transport>
+    </transports>
+</agents>

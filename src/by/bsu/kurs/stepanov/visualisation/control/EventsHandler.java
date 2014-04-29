@@ -16,6 +16,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.util.*;
 
@@ -28,7 +32,7 @@ import java.util.*;
  */
 public class EventsHandler implements MapFX {
 
-
+    private Logger log;
     private Group group;
     private Group nodeGr;
     private Group roadGr;
@@ -48,9 +52,14 @@ public class EventsHandler implements MapFX {
     private Line roadDrawingVector = new Line();
     private Line transportDrawingVector = new Line();
     private ImageView lastNodeDragged = null;
+    private boolean finished = false;
+    private MapAgentController mac = null;
 
 
-    public EventsHandler(Group webViewGroup) {
+    public EventsHandler(Group webViewGroup, MapAgentController mapAgentController) {
+        finished = false;
+        mac = mapAgentController;
+        log = new Logger();
         handler = this;
         setGroup(webViewGroup);
         roadDrawingVector.setVisible(false);
@@ -200,6 +209,8 @@ public class EventsHandler implements MapFX {
                             if (flag) {
                                 roadsByImage.put(ui.getRoad(), ui);
                             }
+                            nodes.get(from).addRoad(name);
+                            nodes.get(to).addRoad(name);
                         }
                     } else {
                         throw new Throwable("not existing node");
@@ -298,8 +309,8 @@ public class EventsHandler implements MapFX {
             if (firstRoadEnd == secondRoadEnd) return;
             String name = nodes.get(firstRoadEnd).getName() + Constants.COORDINATE_SPLITTER + ui.getName();
             addRoadMarker(name, firstRoadEnd, secondRoadEnd, 0, "UI");
-            ui.addRoad(name);
-            nodes.get(firstRoadEnd).addRoad(name);
+            //ui.addRoad(name);
+            //nodes.get(firstRoadEnd).addRoad(name);
             firstRoadEnd = null;
         } else {
             firstRoadEnd = ui.getCoordinates();
@@ -317,6 +328,17 @@ public class EventsHandler implements MapFX {
 
     }
 
+    @Override
+    public Logger getLog() {
+        return log;
+    }
+
+    @Override
+    public void finish() {
+        finished = true;
+        //log.close();
+    }
+
     public void setGroup(Group group) {
         this.group = group;
         this.nodeGr = (Group) group.getChildren().get(1);
@@ -331,6 +353,10 @@ public class EventsHandler implements MapFX {
     private Random rnd = new Random(System.nanoTime());
 
     public void createTimeLine() {
+        if (finished && mapEvents.isEmpty()) {
+            mac.controller.stopAgents(null);
+            return;
+        }
         AtomicTimelineService atc = new AtomicTimelineService();
         atc.setTransportGroup(getGroup());
         atc.setNodes(nodes);
@@ -461,5 +487,257 @@ public class EventsHandler implements MapFX {
 
     public void setState(Controller.State state) {
         this.state = state;
+    }
+
+    public void parse(Document doc) {
+        /*Node agent = doc.getDocumentElement();
+        NodeList nodesLists = null;
+        NodeList roadsLists = null;
+        NodeList transportsLists = null;
+        Node iterator;
+        for (int q = 0; q < agent.getChildNodes().getLength(); q++) {
+            iterator = agent.getChildNodes().item(q);
+            switch (iterator.getNodeName()) {
+                case "nodes": {
+                    nodesLists = iterator.getChildNodes();
+                    break;
+                }
+                case "roads": {
+                    roadsLists = iterator.getChildNodes();
+                    break;
+                }
+                case "transports": {
+                    transportsLists = iterator.getChildNodes();
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+
+        NodeList nodes = nodesLists;
+        NodeList roads = roadsLists;
+        NodeList transports = transportsLists;
+//        NodeList nodes = doc.getElementsByTagName("node");
+//        NodeList roads = doc.getElementsByTagName("road");
+//        NodeList transports = doc.getElementsByTagName("transport");
+        Node node;
+        String name;
+        Map<String, Coordinates> nodeMap = new HashMap<>();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            node = nodes.item(i);
+            if (node.getAttributes() == null) {
+                continue;
+            }
+            name = node.getAttributes().getNamedItem("name").getNodeValue();
+            NodeList coordinates = node.getChildNodes();
+            String lng = null;
+            String lat = null;
+            for (int k = 0; k < coordinates.getLength(); k++) {
+                Node coord = coordinates.item(k);
+                if (coord.getNodeName().equals("longtitude")) {
+                    lng = (coord.getNodeValue());
+                } else if (coord.getNodeName().equals("latitude")) {
+                    lat = (coord.getNodeValue());
+                }
+            }
+            if (lng == null || lat == null) {
+                continue;
+            }
+            Coordinates coordinate = new Coordinates(lat, lng);
+            addNodeMarker(name, coordinate, "UI");
+            nodeMap.put(name, coordinate);
+        }
+        for (int i = 0; i < roads.getLength(); i++) {
+            node = roads.item(i);
+            if (node.getAttributes() == null) {
+                continue;
+            }
+            name = node.getAttributes().getNamedItem("name").getNodeValue();
+            NodeList fromToMode = node.getChildNodes();
+            String from = null;
+            String to = null;
+            String mode = null;
+            for (int k = 0; k < fromToMode.getLength(); k++) {
+                Node childNode = fromToMode.item(k);
+                switch (childNode.getNodeName()) {
+                    case "from": {
+                        from = childNode.getNodeValue();
+                        break;
+                    }
+                    case "to": {
+                        to = childNode.getNodeValue();
+                        break;
+                    }
+                    case "roadMode": {
+                        mode = childNode.getNodeValue();
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            }
+            if (from == null || to == null || mode == null) {
+                continue;
+            }
+            Coordinates fr = nodeMap.get(from);
+            Coordinates t = nodeMap.get(to);
+            Integer mo = Integer.valueOf(mode);
+            addRoadMarker(name, fr, t, mo, "UI");
+        }
+        for (int i = 0; i < transports.getLength(); i++) {
+            node = transports.item(i);
+            if (node.getAttributes() == null) {
+                continue;
+            }
+            name = node.getAttributes().getNamedItem("name").getNodeValue();
+            NodeList fromTo = node.getChildNodes();
+            String from = null;
+            String to = null;
+            for (int k = 0; k < fromTo.getLength(); k++) {
+                Node childNode = fromTo.item(k);
+                switch (childNode.getNodeName()) {
+                    case "from": {
+                        from = childNode.getNodeValue();
+                        break;
+                    }
+                    case "to": {
+                        to = childNode.getNodeValue();
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            }
+            if (from == null || to == null) {
+                continue;
+            }
+            Coordinates fr = nodeMap.get(from);
+            Coordinates t = nodeMap.get(to);
+            addTransportMarker(name, fr, t, "UI");
+        } */
+        NodeList agents = getNode("agents", doc.getChildNodes()).getChildNodes();
+
+        Node nodes = getNode("nodes", agents);
+        Node roads = getNode("roads", agents);
+        Node transports = getNode("transports", agents);
+
+        Map<String, Coordinates> nodeMap = new HashMap<>();
+        for (int x = 0; x < nodes.getChildNodes().getLength(); x++) {
+            Node node = nodes.getChildNodes().item(x);
+            if (node.getNodeName().equalsIgnoreCase("node")) {
+                String name = getNodeAttr("name", node);
+                Node coordinates = getNode("coordinates", node.getChildNodes());
+                String lng = getNodeValue("longtitude", coordinates.getChildNodes());
+                String lat = getNodeValue("latitude", coordinates.getChildNodes());
+                if (lng == null || lat == null) {
+                    continue;
+                }
+                Coordinates coordinate = new Coordinates(lat, lng);
+                addNodeMarker(name, coordinate, "UI");
+                nodeMap.put(name, coordinate);
+            }
+        }
+        for (int x = 0; x < roads.getChildNodes().getLength(); x++) {
+            Node node = roads.getChildNodes().item(x);
+            if (node.getNodeName().equalsIgnoreCase("road")) {
+                String name = getNodeAttr("name", node);
+                String fromStr = getNodeValue("from", node.getChildNodes());
+                String toStr = getNodeValue("to", node.getChildNodes());
+                String modeStr = getNodeValue("roadMode", node.getChildNodes());
+                if (fromStr == null || toStr == null || modeStr == null) {
+                    continue;
+                }
+                Coordinates from = nodeMap.get(fromStr);
+                Coordinates to = nodeMap.get(toStr);
+                Integer mode = Integer.valueOf(modeStr);
+                addRoadMarker(name, from, to, mode, "UI");
+                //this.nodes.get(from).addRoad(name);
+                //this.nodes.get(to).addRoad(name);
+            }
+        }
+        for (int x = 0; x < transports.getChildNodes().getLength(); x++) {
+            Node node = transports.getChildNodes().item(x);
+            if (node.getNodeName().equalsIgnoreCase("transport")) {
+                String name = getNodeAttr("name", node);
+                String fromStr = getNodeValue("from", node.getChildNodes());
+                String toStr = getNodeValue("to", node.getChildNodes());
+                if (fromStr == null || toStr == null) {
+                    continue;
+                }
+                Coordinates from = nodeMap.get(fromStr);
+                Coordinates to = nodeMap.get(toStr);
+                addTransportMarker(name, from, to, "UI");
+            }
+        }
+        System.err.println("import done");
+    }
+
+    protected Node getNode(String tagName, NodeList nodes) {
+        for (int x = 0; x < nodes.getLength(); x++) {
+            Node node = nodes.item(x);
+            if (node.getNodeName().equalsIgnoreCase(tagName)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
+    protected String getNodeValue(Node node) {
+        NodeList childNodes = node.getChildNodes();
+        for (int x = 0; x < childNodes.getLength(); x++) {
+            Node data = childNodes.item(x);
+            if (data.getNodeType() == Node.TEXT_NODE)
+                return data.getNodeValue();
+        }
+        return "";
+    }
+
+    protected String getNodeValue(String tagName, NodeList nodes) {
+        for (int x = 0; x < nodes.getLength(); x++) {
+            Node node = nodes.item(x);
+            if (node.getNodeName().equalsIgnoreCase(tagName)) {
+                NodeList childNodes = node.getChildNodes();
+                for (int y = 0; y < childNodes.getLength(); y++) {
+                    Node data = childNodes.item(y);
+                    if (data.getNodeType() == Node.TEXT_NODE)
+                        return data.getNodeValue();
+                }
+            }
+        }
+        return "";
+    }
+
+    protected String getNodeAttr(String attrName, Node node) {
+        NamedNodeMap attrs = node.getAttributes();
+        for (int y = 0; y < attrs.getLength(); y++) {
+            Node attr = attrs.item(y);
+            if (attr.getNodeName().equalsIgnoreCase(attrName)) {
+                return attr.getNodeValue();
+            }
+        }
+        return "";
+    }
+
+    protected String getNodeAttr(String tagName, String attrName, NodeList nodes) {
+        for (int x = 0; x < nodes.getLength(); x++) {
+            Node node = nodes.item(x);
+            if (node.getNodeName().equalsIgnoreCase(tagName)) {
+                NodeList childNodes = node.getChildNodes();
+                for (int y = 0; y < childNodes.getLength(); y++) {
+                    Node data = childNodes.item(y);
+                    if (data.getNodeType() == Node.ATTRIBUTE_NODE) {
+                        if (data.getNodeName().equalsIgnoreCase(attrName))
+                            return data.getNodeValue();
+                    }
+                }
+            }
+        }
+
+        return "";
     }
 }

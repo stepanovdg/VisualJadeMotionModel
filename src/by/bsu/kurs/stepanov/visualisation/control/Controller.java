@@ -26,10 +26,15 @@ import javafx.scene.web.PopupFeatures;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import javafx.util.Duration;
 import netscape.javascript.JSObject;
 
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 
@@ -70,6 +75,10 @@ public class Controller {
     private Button loadMapButton;
     @FXML
     private Button startButton;
+    @FXML // fx:id="exportButton"
+    private Button exportButton; // Value injected by FXMLLoader
+    @FXML // fx:id="importButton"
+    private Button importButton; // Value injected by FXMLLoader
     @FXML
     private WebView webView;
     @FXML
@@ -180,6 +189,30 @@ public class Controller {
         return fadeOut;
     }
 
+    @FXML
+    void importAction(ActionEvent event) {
+        final Stage dialog = new Stage(StageStyle.TRANSPARENT);
+        dialog.initModality(Modality.WINDOW_MODAL);
+        FileChooser fileChooser = new FileChooser();
+        File dest = fileChooser.showOpenDialog(dialog);
+        if (dest == null) {
+            return;
+        }
+        mac.importFromFile(dest);
+    }
+
+    @FXML
+    void exportAction(ActionEvent event) {
+        final Stage dialog = new Stage(StageStyle.TRANSPARENT);
+        dialog.initModality(Modality.WINDOW_MODAL);
+        FileChooser fileChooser = new FileChooser();
+        File dest = fileChooser.showSaveDialog(dialog);
+        if (dest == null) {
+            return;
+        }
+        mac.export(dest);
+    }
+
 
     @FXML
     void lockMap(ActionEvent event) {
@@ -190,6 +223,7 @@ public class Controller {
             fadeIn(addRoadButton);
             fadeIn(addTransportButton);
             fadeIn(table);
+            fadeIn(importButton);
         } else {
             fadeOut(initAgentsButton);
             lockMapButton.setText("Lock map");
@@ -199,6 +233,7 @@ public class Controller {
             fadeOut(addRoadButton);
             fadeOut(addTransportButton);
             fadeOut(table);
+            fadeOut(importButton);
         }
         setMapDraggable(lockMap);
         //webView.setDisable(!lockMap);
@@ -249,6 +284,7 @@ public class Controller {
 //        getMapCenter();
 //        getMapBorders();
         state = State.SHOWING;
+        mac.setState(State.SHOWING);
         mac.init();
         webViewGroup.requestLayout();
         webViewGroup.requestFocus();
@@ -271,11 +307,12 @@ public class Controller {
         /*ockMapButton.setDisable(false);
         initAgentsButton.setDisable(false);
         stopAgentsButton.setDisable(true);   */
-        mac.stop();
+        //mac.stop(); todo change to real mac stop now it is still close all
         webViewGroup.requestLayout();
         webViewGroup.requestFocus();
         //final FadeTransition fadeLockButton = fadeOut(Duration.valueOf("1s"), stopAgentsButton);
         //initAgentsButton.setDisable(false);
+        fadeIn(exportButton);
         fadeIn(initAgentsButton);
         fadeOut(startButton);
         // startButton.setDisable(true);
@@ -299,6 +336,8 @@ public class Controller {
         assert lockMapButton != null : "fx:id=\"lockMapButton\" was not injected: check your FXML file 'main.fxml'.";
         assert table != null : "fx:id=\"table\" was not injected: check your FXML file 'main.fxml'.";
         assert initAgentsButton != null : "fx:id=\"initAgentsButton\" was not injected: check your FXML file 'main.fxml'.";
+        assert importButton != null : "fx:id=\"importButton\" was not injected: check your FXML file 'main.fxml'.";
+        assert exportButton != null : "fx:id=\"exportButton\" was not injected: check your FXML file 'main.fxml'.";
         CoordinatesUtils.getInstance().setResolution(webView.getPrefWidth(), webView.getPrefHeight());
         fadeOut(addNodeButton);
         fadeOut(addRoadButton);
@@ -308,7 +347,9 @@ public class Controller {
         fadeOut(stopAgentsButton);
         fadeOut(lockMapButton);
         fadeOut(table);
-        mac = new MapAgentController("Minsk", webViewGroup);
+        fadeOut(importButton);
+        fadeOut(exportButton);
+        mac = new MapAgentController("Minsk", webViewGroup, this);
         dropShadow.setColor(Color.GREEN);
     }
 

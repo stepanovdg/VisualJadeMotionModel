@@ -6,6 +6,7 @@ import by.bsu.kurs.stepanov.visualisation.agents.NodeAgentUi;
 import by.bsu.kurs.stepanov.visualisation.agents.RoadAgentUi;
 import by.bsu.kurs.stepanov.visualisation.agents.TransportAgentUi;
 import by.bsu.kurs.stepanov.visualisation.application.Runner;
+import by.bsu.kurs.stepanov.visualisation.control.Logger;
 import by.bsu.kurs.stepanov.visualisation.control.MapFX;
 import jade.core.AID;
 import jade.core.Agent;
@@ -37,6 +38,7 @@ public class MapControlAgent extends Agent {
     private AgentController agc1;
     private MapFX map;
     private List<String> transportAgents;
+    private Logger log;
 
 
     /**
@@ -119,9 +121,18 @@ public class MapControlAgent extends Agent {
                 case Constants.STATUS: {
                     StringEnvelope env = (StringEnvelope) ph.getObj()[0];
                     map.addNodeMarker(name, coordinates, env.getString());
+                    log.write("Node with name " + name + " was turned into next status " + env.getString());
                     break;
                 }
                 default: {
+                    /*String nodeLogMsg = ((StringEnvelope) ph.getObj()[0]).getString();      //todo check uncomment or delete
+                    switch (nodeLogMsg) {
+                        case "DISTANCE": {
+                            break;
+                        }
+                    }
+                    System.out.println(event + "=event object=" + ph.getObj());     */
+
                     break;
                 }
             }
@@ -133,6 +144,7 @@ public class MapControlAgent extends Agent {
                 case Constants.READY: {
                     IntegerEnvelope mode = (IntegerEnvelope) ph.getObj()[0];
                     map.addRoadMarker(name, from, to, mode.percent, "READY");
+                    log.write("Road with name " + name + "was created from " + from + " point to " + to + " point");
                     break;
                 }
                 case Constants.TRANSPORT_MOVE: {
@@ -141,6 +153,8 @@ public class MapControlAgent extends Agent {
                     IntegerEnvelope integerEnvelope = (IntegerEnvelope) ph.getObj()[2];
                     Coordinates dest = nodeAgents.get(destination);
                     map.moveTransportMarker(transport.getLocalName(), dest, integerEnvelope.percent);
+                    log.write("Transport with name " + transport + " successfully drive " + integerEnvelope.percent + "% on the road "
+                            + name + "to " + destination + "with coordinates(" + dest + ")");
                     break;
                 }
                 case Constants.STATUS: {
@@ -149,11 +163,12 @@ public class MapControlAgent extends Agent {
                     break;
                 }
                 default: {
-                    System.err.println(event);
+                    System.out.println(event + "=event object=" + ph.getObj());
+
                     break;
                 }
             }
-        } else {
+        } else if (transportAgents.contains(name)) {
             switch (event) {
                 case Constants.READY: {  //todo add check for outofbounds and etc
                     AID situated = (AID) ph.getObj()[0];
@@ -161,18 +176,26 @@ public class MapControlAgent extends Agent {
                     Coordinates sit = nodeAgents.get(situated);
                     Coordinates dest = nodeAgents.get(destination);
                     map.addTransportMarker(name, sit, dest, "READY");
+                    log.write("Transport with name:" + name + " was created situated in " + situated + "with coordinates("
+                            + sit + ") and destinated to " + destination + "with coordinates(" + dest + ")");
                     break;
                 }
                 case Constants.START: {
                     AID situated = (AID) ph.getObj()[0];
                     Coordinates sit = nodeAgents.get(situated);
                     map.moveTransportMarker(name, sit, 0);
+                    log.write("Transport with name:" + name + "start its journey from " + situated + "with coordinates(" + sit + ")");
                     break;
                 }
                 case Constants.FINISH: {
                     AID situated = (AID) ph.getObj()[0];
                     Coordinates dest = nodeAgents.get(situated);
                     map.moveTransportMarker(name, dest, 100);
+                    transportAgents.remove(name);
+                    if (transportAgents.isEmpty()) {
+                        map.finish();
+                    }
+                    log.write("Transport with name:" + name + "finishes its journey in " + situated + "with coordinates(" + dest + ")");
                     break;
                 }
                 case Constants.STATUS: {
@@ -181,9 +204,14 @@ public class MapControlAgent extends Agent {
                     break;
                 }
                 default: {
+                    // System.out.println(event + "=event object=" + ph.getObj());
+
                     break;
                 }
             }
+        } else {
+            //System.out.println(event + "=event object="+ph.getObj()); timer log only
+            //todo add atomic agetn behaviour
         }
         return null;
     }
@@ -193,6 +221,10 @@ public class MapControlAgent extends Agent {
             return;
         }
         map = (MapFX) arguments[0];
+        log = map.getLog();
+        if (log == null) {
+            log = new Logger();
+        }
     }
 
     private void initRoads(Object[] arguments) {
@@ -368,7 +400,7 @@ public class MapControlAgent extends Agent {
         createNode("N5", mainContainer, 55.95535088453654, 23.302001953125, new Object[]{road4, road6, road8});
         createNode("N6", mainContainer, 55.979945357882315, 21.104736328125, new Object[]{road7});
         createNode("N7", mainContainer, 56.26165975623276, 23.609619140625, new Object[]{road8});
-        agc1 = Runner.createAtomicMotionAgent("A1", mainContainer, new Object[]{road1, road2, road3, road4, road5, road6, road7, road8});
+        agc1 = Runner.createAtomicMotionAgent("A1", mainContainer, new Object[]{road1, road2, road3, road4, road5, road6, road7, road8, this.getAID()});
 
     }
 

@@ -113,6 +113,8 @@ public class NodeAgent extends Agent {
                     reply.setPerformative(Constants.MESSAGE);
                     PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, new PriceRuleObj<AID, Price>(dest, new Price()));
                     paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
+                    paintLog(Constants.LOG, new StringEnvelope("Node " + getAID() + "found that it is finish node for some way so its answer previous node ("
+                            + msg.getSender() + ") to begin calculation price for this way"));
                     reply.setContentObject(ph1);
 
                 } else {
@@ -127,6 +129,8 @@ public class NodeAgent extends Agent {
                             dist.setAddress(dest);
                             PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist);
                             paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
+                            paintLog(Constants.LOG, new StringEnvelope("Node " + getAID() + "for request to find way to" + dest + "found that it already contain cached working way to this node so its answer previous node ("
+                                    + msg.getSender() + ") to proceed calculation price for this way with some calulated part"));
                             reply.setContentObject(ph1);
                         }
                     } else {
@@ -152,11 +156,11 @@ public class NodeAgent extends Agent {
                             distanceTable.put(dest, dist);
                         }
                     }
-                    if(carSet.containsValue(dest)){
+                    if (carSet.containsValue(dest)) {
                         permitMotion(dest);
                     }
                 } else {
-                    System.out.println("Tupic in"+getAID()+"while searching "+dest);
+                    paintLog(Constants.LOG, new StringEnvelope("Tupic in" + getAID() + "while searching " + dest));
                     //bad behaviour
                 }
                 break;
@@ -170,13 +174,16 @@ public class NodeAgent extends Agent {
                     reply.setPerformative(Constants.MESSAGE);
                     PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_DESTINATED);
                     paintLog(Constants.STATUS, new StringEnvelope("FOUND_DESTINATION"));
+                    paintLog(Constants.LOG, new StringEnvelope("Node " + getAID() + "was asked for road leading to " + dest +
+                            " and realize this transport has no needness to drive (it`s already here)"));
                     reply.setContentObject(ph1);
                 } else {
                     if (distanceTable.containsKey(dest)) {
                         PriceRuleObj<AID, Price> dist = distanceTable.get(dest);
                         if (dist.isEmpty()) {
                             //in this case it should never used
-                            System.out.println("Broken method");
+                            paintLog(Constants.LOG, new StringEnvelope("Node " + getAID() + "realize that smth bad was happens: it contains way to " + dest +
+                                    " but price for this way is null(("));
                             paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
                             askForDistance(dest); // check
                         } else {
@@ -184,12 +191,14 @@ public class NodeAgent extends Agent {
                             reply.setPerformative(Constants.MESSAGE);
                             reply.setContent(Constants.ACTION_FOUND_DESTINATION);
                             PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_FOUND_DESTINATION, dist.getAddress());
+                            paintLog(Constants.LOG, new StringEnvelope("Node " + getAID() + "was asked for road leading to " + dest +
+                                    " and as its already contains way to it answer with road name " + dist));
                             paintLog(Constants.STATUS, new StringEnvelope("FOUND_DESTINATION"));
                             reply.setContentObject(ph1);
                         }
                     } else {
                         distanceTable.put(dest, new PriceRuleObj<AID, Price>());
-                        carSet.put(msg.getSender(),dest);
+                        carSet.put(msg.getSender(), dest);
                         paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
                         askForDistance(dest);
                     }
@@ -206,6 +215,8 @@ public class NodeAgent extends Agent {
     }
 
     private void permitMotion(AID destination) throws IOException {
+        paintLog(Constants.LOG, new StringEnvelope("Node " + getAID() + "realize that some cars waiting from it answer about the road leading to ("
+                + destination + ") can start their journey as the way was found."));
         ACLMessage msg = new ACLMessage(Constants.MESSAGE);
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_FOUND_DESTINATION, distanceTable.get(destination).getAddress());
         paintLog(Constants.STATUS, new StringEnvelope("FOUND_DESTINATION"));
@@ -221,6 +232,8 @@ public class NodeAgent extends Agent {
 
     private void askToCalculate(AID destination, PriceRuleObj<AID, Price> dist) throws IOException {
         ACLMessage msg = new ACLMessage(Constants.MESSAGE);
+        paintLog(Constants.LOG, new StringEnvelope("Node " + getAID() + "receive request that way for some destination ("
+                + destination + ") it was asking before found so now this way is calculating its price."));
         PriceRuleObj<AID, Price> dist1 = new PriceRuleObj<>(destination, dist.getDistance());
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist1);
         paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
@@ -234,6 +247,7 @@ public class NodeAgent extends Agent {
     }
 
     private void askForDistance(AID dest) throws IOException {
+        paintLog(Constants.LOG, new StringEnvelope("Node " + getAID() + " ask all his roads to find way to (" + dest + ") "));
         for (AID road : roadSet) {
             ACLMessage msg = new ACLMessage(Constants.MESSAGE);
             PurposeHandler ph = new PurposeHandler(Constants.ACTION_FIND_DESTINATION, dest);

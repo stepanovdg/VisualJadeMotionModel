@@ -40,9 +40,12 @@
                                         prefHeight="23.0" prefWidth="98.0" text="Add Road"/>
                                 <Button fx:id="addTransportButton" mnemonicParsing="false" onAction="#addTransport"
                                         prefHeight="23.0" prefWidth="98.0" text="Add Trans" textAlignment="CENTER"/>
+                                <Button fx:id="importButton" mnemonicParsing="false" onAction="#importAction"
+                                        prefHeight="23.0" prefWidth="98.0" text="Import" textAlignment="CENTER"/>
                             </items>
                         </ToolBar>
-                        <TableView fx:id="table" disable="true" prefWidth="108.0" xmlns:fx="http://javafx.com/fxml">
+                        <TableView fx:id="table" disable="true" prefHeight="381.0" prefWidth="108.0"
+                                   xmlns:fx="http://javafx.com/fxml">
                             <columns>
                                 <TableColumn fx:id="nameColumn" editable="false" maxWidth="54.0" prefWidth="54.0"
                                              resizable="false" sortable="false" text="Name"/>
@@ -63,6 +66,8 @@
                                 text="Start moving"/>
                         <Button fx:id="stopAgentsButton" mnemonicParsing="false" onAction="#stopAgents"
                                 prefHeight="25.0" prefWidth="58.0" text="Stop"/>
+                        <Button fx:id="exportButton" mnemonicParsing="false" onAction="#exportAction" text="Export"
+                                textAlignment="CENTER"/>
                     </items>
                 </ToolBar>
             </top>

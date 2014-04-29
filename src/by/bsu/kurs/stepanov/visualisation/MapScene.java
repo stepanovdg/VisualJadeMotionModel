@@ -5,6 +5,7 @@ import by.bsu.kurs.stepanov.visualisation.agents.NodeAgentUi;
 import by.bsu.kurs.stepanov.visualisation.agents.RoadAgentUi;
 import by.bsu.kurs.stepanov.visualisation.agents.TransportAgentUi;
 import by.bsu.kurs.stepanov.visualisation.application.Runner;
+import by.bsu.kurs.stepanov.visualisation.control.Logger;
 import by.bsu.kurs.stepanov.visualisation.control.MapFX;
 import javafx.animation.Timeline;
 import javafx.animation.TimelineBuilder;
@@ -123,5 +124,15 @@ public class MapScene extends Application implements MapFX {
         map.addRoad(from.getLatitude(), from.getLongitude(), to.getLatitude(), to.getLongitude());
         root.requestLayout();
         //javafx.lang.FX.deferAction();
+    }
+
+    @Override
+    public Logger getLog() {
+        return null;
+    }
+
+    @Override
+    public void finish() {
+
     }
 }

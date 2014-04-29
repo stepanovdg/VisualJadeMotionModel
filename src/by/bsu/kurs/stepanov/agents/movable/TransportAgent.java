@@ -2,6 +2,7 @@ package by.bsu.kurs.stepanov.agents.movable;
 
 import by.bsu.kurs.stepanov.types.Constants;
 import by.bsu.kurs.stepanov.types.PurposeHandler;
+import by.bsu.kurs.stepanov.types.StringEnvelope;
 import by.bsu.kurs.stepanov.utils.ExceptionUtils;
 import jade.core.AID;
 import jade.core.Agent;
@@ -80,12 +81,16 @@ public class TransportAgent extends Agent {
                 AID road = (AID) ph.getObj()[0];
                 startMotion(road);
                 setSituated(road);
+                paintLog(Constants.LOG, new StringEnvelope("Transport " + getAID() + " start move on road " + road));
                 break;
             }
             case Constants.ACTION_STOP_MOTION: {
                 AID road = msg.getSender();
                 AID toNode = (AID) ph.getObj()[0];
                 askForDestination(toNode);
+                paintLog(Constants.LOG, new StringEnvelope("Transport " + getAID() + " end moving on road "
+                        + road + "and ask node " + toNode + " about next road"));
+
                 break;
             }
             case Constants.ACTION_DESTINATED: {

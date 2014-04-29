@@ -92,10 +92,10 @@ public class AtomicTimelineService extends Service {
                         TransportAgentUi ui = transport.get(me.getName());
                         return moveTransport(me.getNext(), me.getRoadPercent(), ui, Duration.millis(i * 1000));
                     } else {
-                        throw new Throwable("trying to move not existing transport");
+                        //throw new Throwable("trying to move not existing transport");
                     }
                 } else {
-                    throw new Throwable("not existing node");
+                    //throw new Throwable("not existing node");
                 }
             } else {
                 Thread.sleep(1000);

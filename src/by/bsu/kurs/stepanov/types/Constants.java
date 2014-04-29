@@ -44,6 +44,7 @@ public class Constants {
     public static final String TRANSPORT_MOVE = "TRANSPORT_MOVE";
     public static final String STATUS = "STATUS";
     public static final boolean STATUS_LOG_ENABLED = true;
+    public static final String LOG = "LOG";
 
    /* public static final int ACTION_FIND_DESTINATION = 16;
         public static final int ACTION_FOUND_DESTINATION = 2;

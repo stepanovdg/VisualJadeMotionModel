@@ -58,7 +58,7 @@ public class RoadAgent extends Agent {
     public RoadAgent(int length, AID firstRoadEnd, AID secondRoadEnd, int roadMotionMode) {
         this.length = length;
         if (length <= 0) {
-            throw new IllegalArgumentException("Road lenth is les or equals zero");
+            throw new IllegalArgumentException("Road length is less or equals zero");
         }
         this.firstRoadEnd = firstRoadEnd;
         this.secondRoadEnd = secondRoadEnd;
@@ -160,6 +160,7 @@ public class RoadAgent extends Agent {
                     ask.setContentObject(ph1);
                     send(ask);
                 }
+                paintLog(Constants.LOG, new StringEnvelope("Road " + getAID() + " was asked for to calculate  its price"));
                 break;
             }
             case Constants.ACTION_FIND_DESTINATION: {
@@ -193,6 +194,8 @@ public class RoadAgent extends Agent {
                 paintLog(Constants.STATUS, new StringEnvelope("INUSE"));
 //                System.out.println(msg);
                 AID transport = msg.getSender();
+                paintLog(Constants.LOG, new StringEnvelope("Road " + getAID() + " receive msg from transport " + transport +
+                        " about asking to start moving on it"));
                 AID from = (AID) ph.getObj()[0];
                 AID to = chooseOtherRoadEnd(from);
                 if (to != null) {
