@@ -128,15 +128,9 @@ public class RoadAgent extends Agent {
 
         ACLMessage reply = null;
         PurposeHandler ph = (PurposeHandler) msg.getContentObject();
-//        System.out.print(!ph.getPurpose().equals(Constants.ACTION_TIMER) ? "purpose= " + ph.getPurpose() + this.getAID() + "\n" : ".");
-        if (ph.getPurpose().equals(Constants.ACTION_START_MOTION)) {
-//            System.out.println("Road recevi mess" + (AID) ph.getObj()[0]);
-        }
         switch (ph.getPurpose()) {
             case Constants.ACTION_CALCULATE_DISTANCE: {
                 paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
-                // System.out.println(msg);
-                //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
                 AID from = msg.getSender();
                 if (roadMotionMode > 0) {
                     if (!from.equals(secondRoadEnd)) {
@@ -165,18 +159,6 @@ public class RoadAgent extends Agent {
             }
             case Constants.ACTION_FIND_DESTINATION: {
                 paintLog(Constants.STATUS, new StringEnvelope("DESTINATION"));
-               /* System.out.println(msg);
-                AID from = msg.getSender();
-                AID to = chooseOtherRoadEnd(from);
-                PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) msg.getContentObject();
-                AID dest = dist.getAddress();
-                if (to != null) {
-                    ACLMessage ask = new ACLMessage(Constants.ACTION_FIND_DESTINATION);
-                    ask.setContentObject(dest);
-                    ask.addReceiver(to);
-                    send(ask);
-                }    */
-                //  System.out.println(msg);
                 AID from = msg.getSender();
                 AID to = chooseOtherRoadEnd(from);
                 AID dest = (AID) ph.getObj()[0];
@@ -192,7 +174,6 @@ public class RoadAgent extends Agent {
             }
             case Constants.ACTION_START_MOTION: {
                 paintLog(Constants.STATUS, new StringEnvelope("INUSE"));
-//                System.out.println(msg);
                 AID transport = msg.getSender();
                 paintLog(Constants.LOG, new StringEnvelope("Road " + getAID() + " receive msg from transport " + transport +
                         " about asking to start moving on it"));
@@ -221,7 +202,7 @@ public class RoadAgent extends Agent {
                 toFirstRoadEndStack[length] = transportAID;
             }
             if (stack == 2) {
-                paintLog(Constants.TRANSPORT_MOVE, transportAID, secondRoadEnd, new IntegerEnvelope(0));   //todo change firstRoadEnd back to secondroad end  in case of it didn`t help
+                paintLog(Constants.TRANSPORT_MOVE, transportAID, secondRoadEnd, new IntegerEnvelope(0));
                 toSecondRoadEndStack[0] = transportAID;
             }
         }
@@ -242,7 +223,7 @@ public class RoadAgent extends Agent {
                 toFirstRoadEndStack[i] = toFirstRoadEndStack[i + 1];
                 paintLog(Constants.TRANSPORT_MOVE, toFirstRoadEndStack[i], firstRoadEnd, new IntegerEnvelope(100 * i / length));
                 toFirstRoadEndStack[i + 1] = null;
-            }
+            }                                      //TODO check for correct car moving at ui
             if (toSecondRoadEndStack[length - i - 1] != null) {
                 toSecondRoadEndStack[length - i] = toSecondRoadEndStack[length - i - 1];
                 paintLog(Constants.TRANSPORT_MOVE, toSecondRoadEndStack[length - i], secondRoadEnd, new IntegerEnvelope(100 * (length - i) / length));
@@ -261,7 +242,6 @@ public class RoadAgent extends Agent {
             paintLog(Constants.STATUS, new StringEnvelope("READY"));
         }
         send(msg);
-        //paintLog(Constants.TRANSPORT_MOVE, transport, roadEnd, new IntegerEnvelope(100));
     }
 
     private void addToTransportStack(AID destinationRoadEnd, AID transport) {
@@ -270,7 +250,6 @@ public class RoadAgent extends Agent {
             System.out.println("RoadEndNotFound");
             return;
         }
-//        System.out.println("Added transport " + transport + "going to " + destinationRoadEnd);
         transportsInUse.add(transport);
         getWaitForTimer().put(transport, to);
     }

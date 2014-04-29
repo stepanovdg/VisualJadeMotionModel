@@ -15,14 +15,6 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public interface MapFX {
-    public void setNodeMarker(Double lat, Double lng);
-
-    /*public void setNodeStatus(String name, Coordinates coordinates, String status);
-
-    public void setRoadStatus(String name, int mode, String status);
-
-    public void setTransportStatus(String name, String status); */
-
     void addNodeMarker(String name, Coordinates coordinates, String status);
 
     void addRoadMarker(String name, Coordinates from, Coordinates to, int mode, String status);
@@ -36,8 +28,6 @@ public interface MapFX {
     public Map<String, TransportAgentUi> getTransports();
 
     public Map<String, RoadAgentUi> getRoads();
-
-    public void setRoad(Coordinates from, Coordinates to);
 
     public Logger getLog();
 

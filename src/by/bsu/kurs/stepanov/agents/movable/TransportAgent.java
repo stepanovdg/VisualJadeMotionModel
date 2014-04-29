@@ -75,7 +75,6 @@ public class TransportAgent extends Agent {
         // System.out.println(msg);
         ACLMessage reply = null;
         PurposeHandler ph = (PurposeHandler) msg.getContentObject();
-//        System.out.print("CAR purpose= " + ph.getPurpose() + this.getAID() + "\n");
         switch (ph.getPurpose()) {
             case Constants.ACTION_FOUND_DESTINATION: {
                 AID road = (AID) ph.getObj()[0];
@@ -100,8 +99,6 @@ public class TransportAgent extends Agent {
                 break;
             }
             case Constants.START: {
-                /*System.out.println("Transport " + getAID().getName() + " begin his journey from "
-                        + getSituated() + " to " + getDestination());  */
                 paintLog(Constants.START, getSituated());
                 askForDestination(getSituated());
                 break;

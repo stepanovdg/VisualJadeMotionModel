@@ -1,5 +1,7 @@
-package by.bsu.kurs.stepanov.visualisation;
+package chernovick;
 
+import by.bsu.kurs.stepanov.visualisation.GoogleMap;
+import by.bsu.kurs.stepanov.visualisation.MapEvent;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;

@@ -51,7 +51,6 @@ public class EventsHandler implements MapFX {
     private Integer counter = 0;
     private Line roadDrawingVector = new Line();
     private Line transportDrawingVector = new Line();
-    private ImageView lastNodeDragged = null;
     private boolean finished = false;
     private MapAgentController mac = null;
 
@@ -77,11 +76,6 @@ public class EventsHandler implements MapFX {
         createTimeLine();
     }
 
-
-    @Override
-    public void setNodeMarker(Double lat, Double lng) {
-    }
-
     @Override
     public void addNodeMarker(final String name, final Coordinates coordinates, final String status) {
         Platform.runLater(new Runnable() {
@@ -105,63 +99,6 @@ public class EventsHandler implements MapFX {
                                 }
                             }
                         });
-                        /*ui.getImage().setOnMousePressed(new EventHandler<MouseEvent>() {
-                            @Override
-                            public void handle(MouseEvent paramT) {
-                                if (state == Controller.State.ROAD) {
-                                    roadDrawingVector.setVisible(true);
-                                    roadDrawingVector.setStartX(paramT.getX());
-                                    roadDrawingVector.setStartY(paramT.getY());
-                                    handler.handleRoadEvent(paramT);
-                                } else if (state == Controller.State.TRANSPORT) {
-                                    transportDrawingVector.setVisible(true);
-                                    transportDrawingVector.setStartX(paramT.getX());
-                                    transportDrawingVector.setStartY(paramT.getY());
-                                    handler.handleTransportEvent(paramT);
-                                }
-                            }
-                        });
-                        ui.getImage().setOnMouseReleased(new EventHandler<MouseEvent>() {
-                            @Override
-                            public void handle(MouseEvent paramT) {
-                                if (state == Controller.State.ROAD) {
-                                    roadDrawingVector.setVisible(false);
-                                    handler.handleRoadEvent(paramT);
-                                } else if (state == Controller.State.TRANSPORT) {
-                                    transportDrawingVector.setVisible(false);
-                                    handler.handleTransportEvent(paramT);
-                                }
-                            }
-                        });
-                        ui.getImage().setOnMouseDragEntered(new EventHandler<MouseDragEvent>() {
-                            @Override
-                            public void handle(MouseDragEvent paramT) {
-                                System.out.println("lastNodeDragged = (ImageView) paramT.getSource()");
-                                lastNodeDragged = (ImageView) paramT.getSource();
-                            }
-                        });
-                        ui.getImage().setOnMouseDragExited(new EventHandler<MouseDragEvent>() {
-                            @Override
-                            public void handle(MouseDragEvent paramT) {
-                                System.out.println("lastNodeDragged = null");
-                                lastNodeDragged = null;
-                            }
-                        });
-                        ui.getImage().setOnMouseDragged(new EventHandler<MouseEvent>() {
-                            @Override
-                            public void handle(MouseEvent paramT) {
-                                Double x = ((ImageView) paramT.getSource()).getX();
-                                Double y = ((ImageView) paramT.getSource()).getY();
-
-                                if (state == Controller.State.ROAD) {
-                                    roadDrawingVector.setEndX(paramT.getX());
-                                    roadDrawingVector.setEndY(paramT.getY());
-                                } else if (state == Controller.State.TRANSPORT) {
-                                    transportDrawingVector.setEndX(paramT.getX());
-                                    transportDrawingVector.setEndY(paramT.getY());
-                                }
-                            }
-                        }); */
 
                         ui.changeStatus(status);
                         nodes.put(coordinates, ui);
@@ -301,7 +238,7 @@ public class EventsHandler implements MapFX {
         }
     }
 
-    private void handleRoadEvent(MouseEvent paramT) { //todo add dialog
+    private void handleRoadEvent(MouseEvent paramT) { //Todo add dialog with parameters
         NodeAgentUi ui = nodesByImage.get(paramT.getSource());
         if (ui == null) return;
         if (firstRoadEnd != null) {
@@ -309,8 +246,6 @@ public class EventsHandler implements MapFX {
             if (firstRoadEnd == secondRoadEnd) return;
             String name = nodes.get(firstRoadEnd).getName() + Constants.COORDINATE_SPLITTER + ui.getName();
             addRoadMarker(name, firstRoadEnd, secondRoadEnd, 0, "UI");
-            //ui.addRoad(name);
-            //nodes.get(firstRoadEnd).addRoad(name);
             firstRoadEnd = null;
         } else {
             firstRoadEnd = ui.getCoordinates();
@@ -319,13 +254,7 @@ public class EventsHandler implements MapFX {
 
     @Override
     public void moveTransportMarker(final String name, final Coordinates next, final int roadPercent) {
-//        System.out.println("move transport " + name + " to" + next + "percent" + roadPercent);
         mapEvents.add(new MapEvent(name, next, roadPercent));
-    }
-
-    @Override
-    public void setRoad(Coordinates from, Coordinates to) {
-
     }
 
     @Override
@@ -336,7 +265,6 @@ public class EventsHandler implements MapFX {
     @Override
     public void finish() {
         finished = true;
-        //log.close();
     }
 
     public void setGroup(Group group) {
@@ -383,83 +311,6 @@ public class EventsHandler implements MapFX {
         transports.clear();
         transportsByImage.clear();
     }
-   /* public void moveTransport(Coordinates next, int roadPercent, final TransportAgentUi ui) {
-        ImageView image = ui.getTransportImage();
-        Coordinates situated = ui.getSituated();
-        final TranslateTransition trans = createTranslateTransition(ui);
-        Double xDest = CoordinatesUtils.xFromWorld(next);
-        System.err.println("1moving xdest" + xDest + " imxx=" + image.getX());
-        xDest = (xDest - (CoordinatesUtils.xFromWorld(situated))) * roadPercent / 100;
-        System.err.println("2moving xdest" + xDest + " imxx=" + image.getX());
-        xDest = CoordinatesUtils.xFromWorld(situated) + xDest - image.getX();
-        //System.err.println("3moving to percent=" + roadPercent + " x=" + xDest);
-        trans.setToX(xDest);
-        Double yDest = CoordinatesUtils.yFromWorld(next);
-        yDest = (yDest - (CoordinatesUtils.yFromWorld(situated))) * roadPercent / 100;
-        yDest = CoordinatesUtils.yFromWorld(situated) + yDest - image.getY();
-        trans.setToY(yDest);
-        if (roadPercent == 100) {
-            ui.setSituated(next);
-        }
-        //transitionQueue.add(trans);
-            /*trans.setOnFinished(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                    TranslateTransition tr = transitionQueue.poll();
-                    if (tr != null) {
-                        System.err.println("start next moving");
-                        tr.playFromStart();
-                        moving = true;
-                    } else {
-                        moving = false;
-                    }
-
-                }
-            });
-            if (!moving) {
-                moving = true;
-                System.err.println("start first moving");
-                trans.playFromStart();
-            }
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                seq.getChildren().add(trans);
-            }
-        });
-
-        seq.play();
-
-
-    }  */
-
-    /*private TranslateTransition createTranslateTransition(final TransportAgentUi ui) {
-        final ImageView image = ui.getTransportImage();
-        final TranslateTransition transition = new TranslateTransition(Duration.seconds(Constants.TRANSLATE_DURATION), image);
-        transition.setOnFinished(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent t) {
-                try {
-                    ui.calculateVector();
-                    System.err.println(t);
-                    System.err.println(image);
-                    System.err.println(image.getTranslateX() + "=translateX image.getx=" + image.getX());
-                    System.out.println("never called handle");
-                    /*image.setX(image.getTranslateX() + image.getX());
-                    image.setY(image.getTranslateY() + image.getY());
-                    image.setTranslateX(0);
-                    image.setTranslateY(0);
-                    image.relocate(image.getTranslateX() + image.getX(), image.getTranslateY() + image.getY());
-                /*transportGr.requestLayout();
-                group.requestLayout();
-                } catch (Throwable te) {
-                    te.printStackTrace();
-                }
-            }
-        });
-
-        return transition;
-    } */
 
     public Map<String, RoadAgentUi> getRoads() {
         return roads;
@@ -490,135 +341,6 @@ public class EventsHandler implements MapFX {
     }
 
     public void parse(Document doc) {
-        /*Node agent = doc.getDocumentElement();
-        NodeList nodesLists = null;
-        NodeList roadsLists = null;
-        NodeList transportsLists = null;
-        Node iterator;
-        for (int q = 0; q < agent.getChildNodes().getLength(); q++) {
-            iterator = agent.getChildNodes().item(q);
-            switch (iterator.getNodeName()) {
-                case "nodes": {
-                    nodesLists = iterator.getChildNodes();
-                    break;
-                }
-                case "roads": {
-                    roadsLists = iterator.getChildNodes();
-                    break;
-                }
-                case "transports": {
-                    transportsLists = iterator.getChildNodes();
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
-        }
-
-        NodeList nodes = nodesLists;
-        NodeList roads = roadsLists;
-        NodeList transports = transportsLists;
-//        NodeList nodes = doc.getElementsByTagName("node");
-//        NodeList roads = doc.getElementsByTagName("road");
-//        NodeList transports = doc.getElementsByTagName("transport");
-        Node node;
-        String name;
-        Map<String, Coordinates> nodeMap = new HashMap<>();
-        for (int i = 0; i < nodes.getLength(); i++) {
-            node = nodes.item(i);
-            if (node.getAttributes() == null) {
-                continue;
-            }
-            name = node.getAttributes().getNamedItem("name").getNodeValue();
-            NodeList coordinates = node.getChildNodes();
-            String lng = null;
-            String lat = null;
-            for (int k = 0; k < coordinates.getLength(); k++) {
-                Node coord = coordinates.item(k);
-                if (coord.getNodeName().equals("longtitude")) {
-                    lng = (coord.getNodeValue());
-                } else if (coord.getNodeName().equals("latitude")) {
-                    lat = (coord.getNodeValue());
-                }
-            }
-            if (lng == null || lat == null) {
-                continue;
-            }
-            Coordinates coordinate = new Coordinates(lat, lng);
-            addNodeMarker(name, coordinate, "UI");
-            nodeMap.put(name, coordinate);
-        }
-        for (int i = 0; i < roads.getLength(); i++) {
-            node = roads.item(i);
-            if (node.getAttributes() == null) {
-                continue;
-            }
-            name = node.getAttributes().getNamedItem("name").getNodeValue();
-            NodeList fromToMode = node.getChildNodes();
-            String from = null;
-            String to = null;
-            String mode = null;
-            for (int k = 0; k < fromToMode.getLength(); k++) {
-                Node childNode = fromToMode.item(k);
-                switch (childNode.getNodeName()) {
-                    case "from": {
-                        from = childNode.getNodeValue();
-                        break;
-                    }
-                    case "to": {
-                        to = childNode.getNodeValue();
-                        break;
-                    }
-                    case "roadMode": {
-                        mode = childNode.getNodeValue();
-                        break;
-                    }
-                    default: {
-                        break;
-                    }
-                }
-            }
-            if (from == null || to == null || mode == null) {
-                continue;
-            }
-            Coordinates fr = nodeMap.get(from);
-            Coordinates t = nodeMap.get(to);
-            Integer mo = Integer.valueOf(mode);
-            addRoadMarker(name, fr, t, mo, "UI");
-        }
-        for (int i = 0; i < transports.getLength(); i++) {
-            node = transports.item(i);
-            if (node.getAttributes() == null) {
-                continue;
-            }
-            name = node.getAttributes().getNamedItem("name").getNodeValue();
-            NodeList fromTo = node.getChildNodes();
-            String from = null;
-            String to = null;
-            for (int k = 0; k < fromTo.getLength(); k++) {
-                Node childNode = fromTo.item(k);
-                switch (childNode.getNodeName()) {
-                    case "from": {
-                        from = childNode.getNodeValue();
-                        break;
-                    }
-                    case "to": {
-                        to = childNode.getNodeValue();
-                        break;
-                    }
-                    default: {
-                        break;
-                    }
-                }
-            }
-            if (from == null || to == null) {
-                continue;
-            }
-            Coordinates fr = nodeMap.get(from);
-            Coordinates t = nodeMap.get(to);
-            addTransportMarker(name, fr, t, "UI");
-        } */
         NodeList agents = getNode("agents", doc.getChildNodes()).getChildNodes();
 
         Node nodes = getNode("nodes", agents);
@@ -655,8 +377,6 @@ public class EventsHandler implements MapFX {
                 Coordinates to = nodeMap.get(toStr);
                 Integer mode = Integer.valueOf(modeStr);
                 addRoadMarker(name, from, to, mode, "UI");
-                //this.nodes.get(from).addRoad(name);
-                //this.nodes.get(to).addRoad(name);
             }
         }
         for (int x = 0; x < transports.getChildNodes().getLength(); x++) {
@@ -673,7 +393,6 @@ public class EventsHandler implements MapFX {
                 addTransportMarker(name, from, to, "UI");
             }
         }
-        System.err.println("import done");
     }
 
     protected Node getNode(String tagName, NodeList nodes) {

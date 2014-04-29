@@ -104,9 +104,6 @@ public class RoadAgentUi {
     private void createRoad(Double x, Double y, final Double toX, final Double toY) {
         double yy = (toY - y);
         double theta = Math.atan((toX - x) / (toY - y)) * 180 / Math.PI;
-        /*if (theta > 90 || theta < -90) {
-            theta = theta + 180;
-        }*/
         if (yy > 0) {
             theta = theta + 180;
         }

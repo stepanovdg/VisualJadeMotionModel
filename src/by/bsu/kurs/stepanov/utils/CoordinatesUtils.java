@@ -41,22 +41,17 @@ public class CoordinatesUtils {
     }
 
     public void setResolution(Double x, Double y) {
-//        System.out.println("x=" + x + " y=" + y);
         xMax = x;
         yMax = y;
     }
 
     public void setMapCenterZoom(Double lon, Double lat, Integer zoom) {
-//        System.out.println("SetMapCenter called");
         mapCenterLatitude = lat;
         mapCenterLongitude = lon;
         zoomLevel = zoom;
-        /*setMapBorders(lat + yMax / 2 * zoomLevels[zoom], lat - yMax / 2 * zoomLevels[zoom],
-                lon + xMax / 2 * zoomLevels[zoom], lon - xMax / 2 * zoomLevels[zoom]);*/
     }
 
     public void setMapBorders(Double latMax, Double latMin, Double longMax, Double longMin) {
-//        System.out.println("SetMapBorders called");
         latitudeMax = latMax;
         latitudeMin = latMin;
         longitudeMax = longMax;
@@ -67,7 +62,6 @@ public class CoordinatesUtils {
         Double dif = difLatitude(latitudeMax, latitudeMin);
         Double zoom = dif / yMax;
         dif = difLatitude(latitude, latitudeMin);
-//        System.out.println(dif / (zoom) + "=y, zoom y =" + zoom);
         return yMax - (dif / (zoom));
     }
 
@@ -75,7 +69,6 @@ public class CoordinatesUtils {
         Double dif = difLongtitude(longitudeMax, longitudeMin);
         Double zoom = dif / xMax;
         dif = difLongtitude(longtitude, longitudeMin);
-//        System.out.println(dif / (zoom) + "=x, zoom x =" + zoom);
         return dif / (zoom);
     }
 

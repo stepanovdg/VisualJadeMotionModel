@@ -77,14 +77,11 @@ public class NodeAgent extends Agent {
                 if (msg != null) {
                     ACLMessage reply = null;
                     try {
-                        if (msg.getSender().getLocalName().equals("ams")) {
-                            //reply = chooseAction(previousMessage);
-                        } else {
+                        if (!msg.getSender().getLocalName().equals("ams")) {
                             reply = chooseAction(msg);
                             previousMessage = msg;
                             previousReply = reply;
                         }
-
                     } catch (UnreadableException | IOException e) {
                         ExceptionUtils.handleException(e);
                     }
@@ -105,7 +102,6 @@ public class NodeAgent extends Agent {
         paintLog(ph.getPurpose());
         switch (ph.getPurpose()) {
             case Constants.ACTION_FIND_DESTINATION: {
-                //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
                 AID dest = (AID) ph.getObj()[0];
                 if (dest.equals(getAID())) {
                     // Found destination ask previous to calculate distance
@@ -125,7 +121,6 @@ public class NodeAgent extends Agent {
                         } else {
                             reply = msg.createReply();
                             reply.setPerformative(Constants.MESSAGE);
-                            //reply.setContent(Constants.ACTION_CALCULATE_DISTANCE);
                             dist.setAddress(dest);
                             PurposeHandler ph1 = new PurposeHandler(Constants.ACTION_CALCULATE_DISTANCE, dist);
                             paintLog(Constants.STATUS, new StringEnvelope("DISTANCE"));
@@ -141,7 +136,6 @@ public class NodeAgent extends Agent {
                 break;
             }
             case Constants.ACTION_CALCULATED_DISTANCE: {
-                //  AID dest = TrajectoryFactory.getDestinationAddress(msg);
                 PriceRuleObj<AID, Price> dist = (PriceRuleObj<AID, Price>) ph.getObj()[0];
                 AID dest = dist.getAddress();
                 if (distanceTable.containsKey(dest)) {
@@ -166,9 +160,7 @@ public class NodeAgent extends Agent {
                 break;
             }
             case Constants.ACTION_ASK_FOR_ROAD_AID: {
-                //  System.out.println("asked for road aid at" + getName() + " aid" + getAID());
                 AID dest = (AID) ph.getObj()[0];
-                // System.out.println("get dest" + dest + " aid" + getAID());
                 if (dest.equals(getAID())) {
                     reply = msg.createReply();
                     reply.setPerformative(Constants.MESSAGE);
@@ -206,12 +198,8 @@ public class NodeAgent extends Agent {
                 break;
 
             }
-           /* case FAILURE: {
-                reply = chooseAction(previousMessage);
-                break;
-            }*/
         }
-        return reply;  //To change body of created methods use File | Settings | File Templates.
+        return reply;
     }
 
     private void permitMotion(AID destination) throws IOException {

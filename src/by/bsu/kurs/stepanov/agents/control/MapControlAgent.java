@@ -114,10 +114,6 @@ public class MapControlAgent extends Agent {
         if (nodeAgents.containsKey(sender)) {
             Coordinates coordinates = nodeAgents.get(sender);
             switch (event) {
-                /*case Constants.READY: {
-                    map.addNodeMarker(name, coordinates, "READY");
-                    break;
-                } */
                 case Constants.STATUS: {
                     StringEnvelope env = (StringEnvelope) ph.getObj()[0];
                     map.addNodeMarker(name, coordinates, env.getString());
@@ -125,14 +121,6 @@ public class MapControlAgent extends Agent {
                     break;
                 }
                 default: {
-                    /*String nodeLogMsg = ((StringEnvelope) ph.getObj()[0]).getString();      //todo check uncomment or delete
-                    switch (nodeLogMsg) {
-                        case "DISTANCE": {
-                            break;
-                        }
-                    }
-                    System.out.println(event + "=event object=" + ph.getObj());     */
-
                     break;
                 }
             }
@@ -163,14 +151,12 @@ public class MapControlAgent extends Agent {
                     break;
                 }
                 default: {
-                    System.out.println(event + "=event object=" + ph.getObj());
-
                     break;
                 }
             }
         } else if (transportAgents.contains(name)) {
             switch (event) {
-                case Constants.READY: {  //todo add check for outofbounds and etc
+                case Constants.READY: {
                     AID situated = (AID) ph.getObj()[0];
                     AID destination = (AID) ph.getObj()[1];
                     Coordinates sit = nodeAgents.get(situated);
@@ -204,14 +190,11 @@ public class MapControlAgent extends Agent {
                     break;
                 }
                 default: {
-                    // System.out.println(event + "=event object=" + ph.getObj());
-
                     break;
                 }
             }
         } else {
-            //System.out.println(event + "=event object="+ph.getObj()); timer log only
-            //todo add atomic agetn behaviour
+            //todo add atomic agent behaviour
         }
         return null;
     }
@@ -331,10 +314,8 @@ public class MapControlAgent extends Agent {
             msg.setContentObject(ph);
             msg.addReceiver(new AID("CAR1" + JADE_PREFIX, ISGUUID));
             msg.addReceiver(new AID("CAR2" + JADE_PREFIX, ISGUUID));
-//            doWait(50000);
             doWait(10000);
             send(msg);
-//            System.out.println("Cars start to move");
         } catch (StaleProxyException | IOException e) {
             ExceptionUtils.handleException(e);
         }

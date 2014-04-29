@@ -20,30 +20,30 @@ import java.util.ArrayList;
  */
 public class AtomicMotionAgent extends Agent {
 
-    private ArrayList<AID> receivers = new ArrayList();
+    private ArrayList<AID> receivers = new ArrayList<>();
 
     private void init(Object[] roadSet) {
-           this.receivers = new ArrayList<>();
-           for (Object obj : roadSet) {
-               this.receivers.add((AID) obj);
-           }
-       }
+        this.receivers = new ArrayList<>();
+        for (Object obj : roadSet) {
+            this.receivers.add((AID) obj);
+        }
+    }
 
     @Override
     protected void setup() {
         init(getArguments());
         System.out.println("Atomic Timer " + getAID().getName() + " ready to work.");
-        final ACLMessage msg = new ACLMessage(7);
+        final ACLMessage msg = new ACLMessage(Constants.MESSAGE);
         PurposeHandler ph = new PurposeHandler(Constants.ACTION_TIMER);
         try {
             msg.setContentObject(ph);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (AID road:receivers) {
+        for (AID road : receivers) {
             msg.addReceiver(road);
         }
-        addBehaviour(new WakerBehaviour(this,Constants.POLLING_TIME) {
+        addBehaviour(new WakerBehaviour(this, Constants.POLLING_TIME) {
             /**
              * This method is invoked when the deadline defined in the
              * constructor is reached (or when the timeout specified in the

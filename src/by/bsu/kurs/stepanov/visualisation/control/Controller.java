@@ -2,9 +2,6 @@ package by.bsu.kurs.stepanov.visualisation.control;
 
 import by.bsu.kurs.stepanov.types.Coordinates;
 import by.bsu.kurs.stepanov.utils.CoordinatesUtils;
-import by.bsu.kurs.stepanov.visualisation.agents.NodeAgentUi;
-import by.bsu.kurs.stepanov.visualisation.agents.RoadAgentUi;
-import by.bsu.kurs.stepanov.visualisation.agents.TransportAgentUi;
 import javafx.animation.FadeTransition;
 import javafx.animation.Transition;
 import javafx.beans.value.ChangeListener;
@@ -36,7 +33,6 @@ import netscape.javascript.JSObject;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -101,11 +97,6 @@ public class Controller {
     private Integer counter = 0;
     private DropShadow dropShadow = new DropShadow();
     final WebView smallView = new WebView();
-
-
-    private HashMap<String, NodeAgentUi> markersMap = new java.util.HashMap<String, NodeAgentUi>();
-    private HashMap<String, RoadAgentUi> roadsMap = new HashMap<String, RoadAgentUi>();
-    private HashMap<String, TransportAgentUi> transportsMap = new HashMap<String, TransportAgentUi>();
 
     private final static class HeightTransition extends Transition {
 
@@ -274,13 +265,12 @@ public class Controller {
 
     @FXML
     void initAgents(ActionEvent event) {
-        /*lockMapButton.setDisable(true);
-        initAgentsButton.setDisable(true); */
         fadeOut(addNodeButton);
         fadeOut(addRoadButton);
         fadeOut(addTransportButton);
         fadeOut(lockMapButton);
         fadeOut(initAgentsButton);
+        fadeOut(importButton);
 //        getMapCenter();
 //        getMapBorders();
         state = State.SHOWING;
@@ -288,11 +278,7 @@ public class Controller {
         mac.init();
         webViewGroup.requestLayout();
         webViewGroup.requestFocus();
-        //final FadeTransition fadeLockButton = fadeOut(Duration.valueOf("1s"), initAgentsButton);
-
         fadeIn(stopAgentsButton);
-        //stopAgentsButton.setDisable(false);
-        //fadeLockButton.play();
     }
 
     @FXML
@@ -304,19 +290,14 @@ public class Controller {
         fadeIn(addTransportButton);
         fadeIn(table);
         fadeOut(stopAgentsButton);
-        /*ockMapButton.setDisable(false);
-        initAgentsButton.setDisable(false);
-        stopAgentsButton.setDisable(true);   */
         //mac.stop(); todo change to real mac stop now it is still close all
         webViewGroup.requestLayout();
         webViewGroup.requestFocus();
-        //final FadeTransition fadeLockButton = fadeOut(Duration.valueOf("1s"), stopAgentsButton);
-        //initAgentsButton.setDisable(false);
+        fadeIn(importButton);
         fadeIn(exportButton);
         fadeIn(initAgentsButton);
         fadeOut(startButton);
-        // startButton.setDisable(true);
-        //fadeLockButton.play();
+
     }
 
     @FXML
@@ -357,8 +338,6 @@ public class Controller {
     @FXML
     void loadMapAction(ActionEvent event) {
         fadeOut(loadMapButton);
-        /*loadMapButton.setDisable(true);
-        initAgentsButton.setDisable(true);*/
         fadeOut(initAgentsButton);
         initMap();
         initCommunication();
@@ -368,8 +347,6 @@ public class Controller {
         //getMapBorders();
         webViewGroup.requestLayout();
         webViewGroup.requestFocus();
-        /*final FadeTransition fadeLockButton = fadeOut(Duration.valueOf("1s"), loadMapButton);
-        fadeLockButton.play();   */
     }
 
     private void getMapBorders() {
@@ -387,7 +364,6 @@ public class Controller {
         //agentRunner.run(eventsHandler);
         setMapCenter(54.92082843149136, 23.829345703125);// temporary
         mac.startMoving(null);
-        //webViewGroup.requestFocus();
     }
 
     private void initMap() {
@@ -395,16 +371,6 @@ public class Controller {
         URL mapUrl = getClass().getClassLoader().getResource("map.html");
         webEngine.load(mapUrl != null ? mapUrl.toExternalForm() : null);
         ready = false;
-        /*webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
-            @Override
-            public void changed(final ObservableValue<? extends Worker.State> observableValue,
-                                final Worker.State oldState,
-                                final Worker.State newState) {
-                if (newState == Worker.State.SUCCEEDED) {
-                    ready = true;
-                }
-            }
-        }); */
     }
 
     private void initCommunication() {
@@ -417,7 +383,6 @@ public class Controller {
                     doc = (JSObject) webEngine.executeScript("window");
                     doc.setMember("app", Controller.this);
                     ready = true;
-                    //lockMapButton.setDisable(false);
                     fadeIn(lockMapButton);
                     //doc.setMember("app", GoogleMap.class);
                 }
@@ -439,7 +404,7 @@ public class Controller {
                 new Callback<String, Boolean>() {
                     @Override
                     public Boolean call(String s) {
-                        System.err.println(s);
+//                        System.err.println(s);
                         return true;
                     }
                 }
@@ -448,15 +413,12 @@ public class Controller {
         webEngine.setOnAlert(new EventHandler<WebEvent<String>>() {
             @Override
             public void handle(WebEvent<String> stringWebEvent) {
-                System.err.println(stringWebEvent.toString());
+//                System.err.println(stringWebEvent.toString());
             }
         });
     }
 
     private void invokeJS(final String str) {
-       /* Platform.runLater(new Runnable() {
-            @Override
-            public void run() { */
         if (ready) {
             System.out.println("invokeJS " + str);
             doc.eval(str);
@@ -467,15 +429,11 @@ public class Controller {
                                     final Worker.State oldState,
                                     final Worker.State newState) {
                     if (newState == Worker.State.SUCCEEDED) {   //change to ready from worker
-                        System.out.println("invokeJS " + str);
                         doc.eval(str);
                     }
                 }
             });
         }
-           /* }
-        });     */
-
     }
 
 
@@ -491,45 +449,27 @@ public class Controller {
 
 
     public void callback(boolean bool) {
-        System.out.println("Callback called" + "," + bool);
         initialized = bool;
-        //CoordinatesUtils.setMapCenterZoom(54.92082843149136, 23.0, zoom);
     }
 
     public void callback(Number latC, Number lonC) {
-        System.out.println("Callback called" + "," + latC + "," + lonC);
         CoordinatesUtils.getInstance().setMapCenterZoom(lonC.doubleValue(), latC.doubleValue(), 7);
     }
 
     public void callback(double latC, double lonC, int zoom) {
-        System.out.println("1Callback called" + "," + latC + "," + lonC + "," + zoom);
         CoordinatesUtils.getInstance().setMapCenterZoom(lonC, latC, zoom);
     }
 
     //public void callback(String latC, String lonC, String zoom,String latMax, String latMin, String lonMax, String lonMin, String latClick, String lonClick) {
     public void callback(double latC, double lonC, int zoom, String latMax, String latMin, String lonMax, String lonMin, String latClick, String lonClick) {
-        System.out.println("2Map Center" + "," + latC + "," + lonC + "," + zoom);
-        System.out.println("2Map Borders" + "," + latMax + "," + latMin + "," + lonMax + "," + lonMin);
-        System.out.println("2Map Click" + "," + latClick + "," + lonClick);
-        System.out.println("State=" + state);
         switch (state) {
             case NODE: {
                 String name = "N" + counter++;
                 Coordinates coord = new Coordinates(latClick, lonClick);
-                System.out.println(coord + "= coord  NameNODE = " + name);
                 mac.addNode(name, coord);
                 break;
             }
             case ROAD: {
-                /*if(firstRoadEnd != null){
-                    Coordinates secondRoadEnd = new Coordinates(latClick, lonClick);
-                    System.out.println(secondRoadEnd + "= coord2  ");
-                    mac.addRoad(firstRoadEnd, secondRoadEnd);
-                    firstRoadEnd = null;
-                }else{
-                    firstRoadEnd = new Coordinates(latClick, lonClick);
-                    System.out.println(firstRoadEnd + "= coord1  ");
-                }    */
                 break;
             }
             case TRANSPORT: {

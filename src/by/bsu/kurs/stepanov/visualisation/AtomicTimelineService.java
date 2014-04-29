@@ -104,32 +104,6 @@ public class AtomicTimelineService extends Service {
             ExceptionUtils.handleException(te);
         }
         return getKeyFrame(i);
-       /* return new KeyFrame(Duration.millis(i * 1000),
-                new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent t) {
-                        try {
-                            //transportGroup.requestLayout();
-                            MapEvent me = events.poll();
-                            if (me != null) {
-                                if (nodes.containsKey(me.getNext())) {
-                                    if (transport.containsKey(me.getName())) {
-                                        TransportAgentUi ui = transport.get(me.getName());
-                                        moveTransport(me.getNext(), me.getRoadPercent(), ui);
-                                    } else {
-                                        throw new Throwable("trying to move not existing transport");
-                                    }
-
-                                } else {
-                                    throw new Throwable("not existing node");
-                                }
-                            }
-                        } catch (Throwable te) {
-                            ExceptionUtils.handleException(te);
-                        }
-                    }
-                },
-                new KeyValue[0]); */
     }
 
     KeyFrame moveTransport(Coordinates next, int roadPercent, TransportAgentUi ui, Duration millis) {

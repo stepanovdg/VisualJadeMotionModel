@@ -1,6 +1,8 @@
-package by.bsu.kurs.stepanov.visualisation;
+package chernovick;
 
 import by.bsu.kurs.stepanov.types.Coordinates;
+import by.bsu.kurs.stepanov.visualisation.GoogleMap;
+import by.bsu.kurs.stepanov.visualisation.MapEvent;
 import by.bsu.kurs.stepanov.visualisation.agents.NodeAgentUi;
 import by.bsu.kurs.stepanov.visualisation.agents.RoadAgentUi;
 import by.bsu.kurs.stepanov.visualisation.agents.TransportAgentUi;
@@ -57,12 +59,12 @@ public class MapScene extends Application implements MapFX {
         map.setOnMapLatLngChanged(eventHandler);
     }
 
-    @Override
+   /* @Override
     public void setNodeMarker(Double lat, Double lng) {
         map.addMarkerPosition(lat, lng);
         root.requestLayout();
         //javafx.lang.FX.deferAction();
-    }
+    } */
 
     @Override
     public void addNodeMarker(String name, Coordinates coordinates, String status) {
@@ -119,12 +121,12 @@ public class MapScene extends Application implements MapFX {
         return null;
     }
 
-    @Override
+    /*@Override
     public void setRoad(Coordinates from, Coordinates to) {
         map.addRoad(from.getLatitude(), from.getLongitude(), to.getLatitude(), to.getLongitude());
         root.requestLayout();
         //javafx.lang.FX.deferAction();
-    }
+    } */
 
     @Override
     public Logger getLog() {
